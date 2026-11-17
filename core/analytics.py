@@ -129,13 +129,14 @@ def anomali_duplikat(df):
     return df.loc[mask, kolom].sort_values(kunci).reset_index(drop=True)
 
 
+# Anomali jika tanggal_kejadian (kejadian) lebih besar/setelah timestamp_input (masuk).
 def anomali_tanggal_mendahului_input(df):
     kolom = ['id', 'tanggal_kejadian', 'timestamp_input', 'nis', 'nama_siswa', 'kelas', 'absen', 'kode_pasal', 'judul']
     if df.empty:
         return df.iloc[0:0].reindex(columns=kolom)
     kejadian = pd.to_datetime(df['tanggal_kejadian'], errors='coerce')
     masuk = pd.to_datetime(df['timestamp_input'], errors='coerce')
-    mask = masuk.notna() & kejadian.notna() & (kejadian.dt.normalize() < masuk.dt.normalize())
+    mask = masuk.notna() & kejadian.notna() & (kejadian.dt.normalize() > masuk.dt.normalize())
     return df.loc[mask, kolom].reset_index(drop=True)
 
 

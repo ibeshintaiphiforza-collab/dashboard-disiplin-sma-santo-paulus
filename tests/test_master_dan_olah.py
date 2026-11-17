@@ -181,7 +181,15 @@ class AnalyticsTestCase(TempDbTestCase):
         self.assertEqual(anomali['poin_beda_default']['id'].tolist(), [3])
         self.assertEqual(anomali['nis_tidak_dikenal']['id'].tolist(), [4])
         self.assertEqual(sorted(anomali['duplikat_kandidat']['id']), [1, 2])
-        self.assertEqual(anomali['tanggal_mendahului_input']['id'].tolist(), [1, 2])
+        self.assertEqual(anomali['tanggal_mendahului_input']['id'].tolist(), [3])
+
+    def test_tanggal_kejadian_setelah_input_ditandai_anomali(self):
+        df = pd.DataFrame([
+            {'id': 1, 'tanggal_kejadian': '2026-08-10', 'timestamp_input': '2026-08-05', 'nis': '12403', 'nama_siswa': 'A', 'kelas': '12-T1 01', 'absen': 1, 'kode_pasal': 'ME-02', 'judul': 'terlambat'},
+            {'id': 2, 'tanggal_kejadian': '2026-08-01', 'timestamp_input': '2026-08-05', 'nis': '12403', 'nama_siswa': 'A', 'kelas': '12-T1 01', 'absen': 1, 'kode_pasal': 'ME-02', 'judul': 'terlambat'},
+        ])
+        hasil = analytics.anomali_tanggal_mendahului_input(df)
+        self.assertEqual(hasil['id'].tolist(), [1])
 
     def test_nis_check_skipped_when_master_empty(self):
         kosong = self.siswa.iloc[0:0]
