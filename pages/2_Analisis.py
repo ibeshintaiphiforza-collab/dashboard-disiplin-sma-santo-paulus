@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
 
@@ -10,7 +11,7 @@ from core import analytics_charts as charts
 from core.analytics import (analisis_per_pasal, analisis_per_tingkat, distribusi_hari_pelanggaran,
                             distribusi_kategori_petugas, eskalasi_tahapan, konsentrasi_pelanggaran,
                             load_siswa, peta_panas_pasal_kelas, peringkat_kelas, pelanggaran_berulang,
-                            siswa_berisiko, siswa_penyumbang, statistik_petugas,
+                            ringkasan_mingguan, siswa_berisiko, siswa_penyumbang, statistik_petugas,
                             top_pelanggar_per_pasal, tren_bulanan)
 from core.db import init_db, load_referensi_pasal
 from core.export import to_csv_bytes, to_excel_bytes
@@ -180,3 +181,60 @@ with st.expander('8. Peta Panas Pasal x Kelas', expanded=False):
             text=angka.values, texttemplate='%{text}', textfont=dict(color='#111111')))
         gambar.update_layout(xaxis_title='Kelas', yaxis_title='Kode pasal')
         st.plotly_chart(gambar, width='stretch')
+
+with st.expander('9. Ringkasan Mingguan', expanded=False):
+    st.caption('Perbandingan kejadian dan poin minggu ini dengan minggu sebelumnya, dihitung nilai mutlak.')
+    tanggal_jurnal = pd.to_datetime(jurnal['tanggal_kejadian'], errors='coerce').dropna()
+    if tanggal_jurnal.empty:
+        st.info('Belum ada tanggal kejadian yang valid.')
+    else:
+        senin_terakhir = tanggal_jurnal.max().normalize()
+        senin_terakhir = senin_terakhir - pd.Timedelta(days=senin_terakhir.dayofweek)
+        awal_minggu = st.date_input('Senin awal minggu', value=senin_terakhir.date(), key='ringkasan_minggu')
+        ringkasan = ringkasan_mingguan(jurnal, awal_minggu)
+        ini = ringkasan['minggu_ini']
+        selisih = ringkasan['selisih']
+        persen = ringkasan['persen']
+
+        def _delta(kunci):
+            teks = f"{selisih[kunci]:+.0f} dari minggu lalu"
+            if persen[kunci] is not None:
+                teks += f" ({persen[kunci]:+.1f}%)"
+            return teks
+
+        kolom_kejadian, kolom_poin = st.columns(2)
+        with kolom_kejadian:
+            st.metric('Kejadian minggu ini', f"{ini['kejadian']:.0f}", _delta('kejadian'))
+        with kolom_poin:
+            st.metric('Total poin minggu ini', f"{ini['total_poin']:.0f}", _delta('total_poin'))
+
+        if ini['kejadian'] < 10:
+            st.info('Data minggu ini sedikit, baca dengan hati-hati')
+
+        st.subheader('3 Pasal Teratas')
+        if ringkasan['pasal_teratas']:
+            st.dataframe(pd.DataFrame(ringkasan['pasal_teratas']), width='stretch', hide_index=True)
+        else:
+            st.caption('Tidak ada')
+
+        st.subheader('3 Kelas Teratas')
+        if ringkasan['kelas_teratas']:
+            st.dataframe(pd.DataFrame(ringkasan['kelas_teratas']), width='stretch', hide_index=True)
+        else:
+            st.caption('Tidak ada')
+
+        st.subheader('5 Murid dengan Kejadian Terbanyak')
+        if ringkasan['murid_terbanyak']:
+            st.dataframe(pd.DataFrame(ringkasan['murid_terbanyak']), width='stretch', hide_index=True)
+        else:
+            st.caption('Tidak ada')
+
+        st.subheader('Murid Naik Tingkat SP')
+        if ringkasan['murid_baru_melewati_ambang']:
+            naik = pd.DataFrame(ringkasan['murid_baru_melewati_ambang'])
+            naik['tingkat_lalu'] = naik['tingkat_lalu'].apply(
+                lambda nilai: 'Belum ada' if pd.isna(nilai) else nilai)
+            st.dataframe(naik[['nama', 'kelas', 'tingkat_lalu', 'tingkat_ini']], width='stretch',
+                         hide_index=True)
+        else:
+            st.caption('Tidak ada')
