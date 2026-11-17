@@ -254,13 +254,13 @@ class StreamlitSmokeTestCase(TempDbTestCase):
 
     def test_profil_siswa_page_smoke_dengan_data(self):
         self.seed()
-        app = self.jalankan('6_Profil_Siswa.py')
+        app = self.jalankan('6_Profil_Murid.py')
         self.assertTrue(app.selectbox)
         self.assertTrue(app.metric)
         self.assertTrue(app.dataframe)
 
     def test_profil_siswa_page_smoke_basis_data_kosong(self):
-        app = self.jalankan('6_Profil_Siswa.py')
+        app = self.jalankan('6_Profil_Murid.py')
         self.assertTrue(app.warning)
 
     def test_analisis_page_smoke_dengan_data(self):

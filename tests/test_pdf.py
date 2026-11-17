@@ -85,7 +85,7 @@ class PdfTestCase(TempDbTestCase):
         riwayat = analytics.riwayat_siswa(self.jurnal, '12403')
         data = pdf.rapor_siswa_pdf(profil, riwayat, '20-07-2026 sampai 13-08-2026')
         self.periksa_pdf(data)
-        self.assertIn(b'Rapor Poin Siswa', data)
+        self.assertIn(b'Rapor Poin Murid', data)
         self.assertIn(b'SMA Katolik Santo Paulus Jember', data)
         self.assertIn(b'Status surat peringatan', data)
 
@@ -110,7 +110,7 @@ class PdfTestCase(TempDbTestCase):
         self.periksa_pdf(data)
         self.assertIn(b'Rekap Sekolah', data)
         self.assertIn(b'Legenda Ambang Surat Peringatan', data)
-        self.assertIn(b'Jumlah siswa', data)
+        self.assertIn(b'Jumlah murid', data)
 
 
 class PdfKosongTestCase(TempDbTestCase):
@@ -266,7 +266,7 @@ class StreamlitPdfTestCase(TempDbTestCase):
 
     def test_profil_siswa_menyediakan_unduhan_pdf(self):
         self.seed()
-        app = self.jalankan('6_Profil_Siswa.py')
+        app = self.jalankan('6_Profil_Murid.py')
         kunci = [tombol.key for tombol in app.download_button]
         self.assertIn('pdf_rapor', kunci)
         self.assertIn('csv_rapor', kunci)

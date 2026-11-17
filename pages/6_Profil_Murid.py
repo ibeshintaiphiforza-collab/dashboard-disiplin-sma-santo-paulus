@@ -13,11 +13,11 @@ from core.pdf import periode_label, rapor_siswa_pdf
 from core.session import sidebar_filters
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
-st.set_page_config(page_title='Profil Siswa', layout='wide')
+st.set_page_config(page_title='Profil Murid', layout='wide')
 inject_css()
 sidebar_brand()
-header_halaman('Profil Siswa',
-               'Rapor poin per siswa: prestasi, pelanggaran, netto, dan riwayat entri.')
+header_halaman('Profil Murid',
+               'Rapor poin per murid: prestasi, pelanggaran, netto, dan riwayat entri.')
 init_db()
 load_referensi_pasal()
 
@@ -29,11 +29,11 @@ jurnal_aktif = jurnal if abaikan_filter else jurnal_filter
 pilihan = daftar_pilihan_siswa(jurnal_aktif if not jurnal_aktif.empty else jurnal, siswa)
 
 if pilihan.empty:
-    st.warning('Belum ada data siswa maupun jurnal. Silakan import data terlebih dahulu.')
+    st.warning('Belum ada data murid maupun jurnal. Silakan import data terlebih dahulu.')
     st.stop()
 
 label_ke_nis = dict(zip(pilihan['label'], pilihan['nis']))
-label_terpilih = st.selectbox('Cari siswa berdasarkan NIS atau nama', pilihan['label'].tolist(), key='profil_siswa')
+label_terpilih = st.selectbox('Cari murid berdasarkan NIS atau nama', pilihan['label'].tolist(), key='profil_siswa')
 nis = label_ke_nis[label_terpilih]
 
 profil = profil_siswa(jurnal_aktif, nis, siswa)
@@ -66,7 +66,7 @@ st.divider()
 st.subheader('Riwayat Entri')
 riwayat = riwayat_siswa(jurnal_aktif, nis)
 if riwayat.empty:
-    st.info('Siswa ini belum memiliki entri jurnal.')
+    st.info('Murid ini belum memiliki entri jurnal.')
 else:
     st.dataframe(riwayat, width='stretch')
 

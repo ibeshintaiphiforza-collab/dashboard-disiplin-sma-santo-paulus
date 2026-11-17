@@ -12,11 +12,11 @@ from core.db import get_conn, init_db, load_referensi_pasal
 from core.importer import MASTER_FIELDS, parse_master_csv, parse_master_siswa, preview_master, save_master_siswa
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
-st.set_page_config(page_title='Master Siswa', layout='wide')
+st.set_page_config(page_title='Master Murid', layout='wide')
 inject_css()
 sidebar_brand()
-header_halaman('Master Siswa',
-               'Kelola daftar induk siswa melalui paste tabel atau unggah CSV.')
+header_halaman('Master Murid',
+               'Kelola daftar induk murid melalui paste tabel atau unggah CSV.')
 init_db()
 load_referensi_pasal()
 
@@ -27,10 +27,10 @@ try:
 finally:
     conn.close()
 kolom_master, _ = st.columns([1, 2])
-kartu_kpi(kolom_master, 'Jumlah siswa pada master', f'{jumlah_master:,}', aksen='emas')
+kartu_kpi(kolom_master, 'Jumlah murid pada master', f'{jumlah_master:,}', aksen='emas')
 
 mode = st.radio('Sumber data', ['Paste tabel', 'Upload CSV'])
-paste = st.text_area('Paste daftar siswa (NIS, NAMA, KELAS, ABSEN dipisah tab)', height=240) if mode == 'Paste tabel' else ''
+paste = st.text_area('Paste daftar murid (NIS, NAMA, KELAS, ABSEN dipisah tab)', height=240) if mode == 'Paste tabel' else ''
 upload = st.file_uploader('Upload CSV', type=['csv']) if mode == 'Upload CSV' else None
 st.caption('Format paste: empat kolom dipisah tab. CSV memakai kolom nis,nama,kelas,absen. Data disimpan berdasarkan NIS; NIS yang sudah ada akan diperbarui nama, kelas, dan absennya.')
 st.download_button('Template CSV', pd.DataFrame(columns=MASTER_FIELDS).to_csv(index=False), 'template_master_siswa.csv', 'text/csv')
@@ -60,8 +60,8 @@ if records:
     st.dataframe(pd.DataFrame(preview), width='stretch')
     if invalid:
         st.error('Perbaiki semua error sebelum menyimpan. Tidak ada baris yang disimpan sebagian.')
-    confirmed = st.checkbox('Saya telah memeriksa preview dan menyetujui penyimpanan master siswa', key='master_confirmed', disabled=bool(invalid))
-    if st.button('Simpan master siswa', key='btn_save_master', disabled=bool(invalid) or not confirmed):
+    confirmed = st.checkbox('Saya telah memeriksa preview dan menyetujui penyimpanan master murid', key='master_confirmed', disabled=bool(invalid))
+    if st.button('Simpan master murid', key='btn_save_master', disabled=bool(invalid) or not confirmed):
         try:
             inserted, updated = save_master_siswa(records, filename, confirmed=confirmed)
             st.success(f'Baru ditambahkan {inserted}; diperbarui {updated}. Audit import tercatat.')
@@ -70,8 +70,8 @@ if records:
             st.error(f'Import dibatalkan: {exc}')
 
 st.divider()
-st.subheader('Master siswa saat ini')
+st.subheader('Master murid saat ini')
 if master_df.empty:
-    st.info('Master siswa masih kosong.')
+    st.info('Master murid masih kosong.')
 else:
     st.dataframe(master_df, width='stretch')

@@ -34,7 +34,7 @@ if jurnal.empty:
 terfilter = sidebar_filters(jurnal, load=False)
 
 st.subheader('Filter dan Tabel Jurnal')
-pencarian = st.text_input('Cari nama siswa atau judul', key='filter_cari')
+pencarian = st.text_input('Cari nama murid atau judul', key='filter_cari')
 terfilter = filter_jurnal(terfilter, pencarian=pencarian)
 st.write(f'{len(terfilter)} dari {len(jurnal)} entri jurnal')
 st.dataframe(terfilter, width='stretch')
@@ -44,12 +44,12 @@ st.subheader('Deteksi Anomali')
 anomali = deteksi_anomali(terfilter, siswa)
 label_anomali = {
     'poin_beda_default': 'Poin berbeda dari poin baku pasal (mode fixed)',
-    'nis_tidak_dikenal': 'NIS tidak ada pada master siswa',
+    'nis_tidak_dikenal': 'NIS tidak ada pada master murid',
     'duplikat_kandidat': 'Kandidat duplikat: NIS + tanggal + kode pasal sama',
     'tanggal_mendahului_input': 'Tanggal kejadian melampaui tanggal input',
 }
 if siswa.empty:
-    st.info('Master siswa kosong; pemeriksaan NIS tidak dikenal dilewati.')
+    st.info('Master murid kosong; pemeriksaan NIS tidak dikenal dilewati.')
 for kunci, judul in label_anomali.items():
     data = anomali[kunci]
     with st.expander(f'{judul} ({len(data)})'):

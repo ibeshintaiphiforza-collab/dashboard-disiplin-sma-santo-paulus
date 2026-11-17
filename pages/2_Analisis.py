@@ -68,7 +68,7 @@ harian = distribusi_hari_pelanggaran(jurnal)
 konsentrasi = konsentrasi_pelanggaran(jurnal)
 
 with st.expander(f'1. Pelanggaran Berulang ({len(data_pelanggaran_berulang)})', expanded=True):
-    st.caption('Siswa yang mengulang kode pasal yang sama, diurutkan dari frekuensi terbanyak.')
+    st.caption('Murid yang mengulang kode pasal yang sama, diurutkan dari frekuensi terbanyak.')
     tabel_dengan_ekspor(data_pelanggaran_berulang, 'pelanggaran_berulang', 'Tidak ada pengulangan pasal yang sama.')
     tampilkan_gambar(charts.fig_pelanggaran_berulang(jurnal), 'Tidak ada pengulangan pasal untuk digambarkan.')
     st.subheader('Rantai Eskalasi Pasal Bertingkat')
@@ -77,11 +77,11 @@ with st.expander(f'1. Pelanggaran Berulang ({len(data_pelanggaran_berulang)})', 
         st.info('Tidak ada entri pada pasal bertingkat.')
     else:
         puncak = eskalasi[eskalasi['di_tahap_tertinggi']]
-        st.write(f'{len(puncak)} siswa berada pada tahap tertinggi rantai.')
+        st.write(f'{len(puncak)} murid berada pada tahap tertinggi rantai.')
         tabel_dengan_ekspor(eskalasi, 'eskalasi_tahapan', 'Tidak ada entri pada pasal bertingkat.')
     tampilkan_gambar(charts.fig_eskalasi(jurnal), 'Tidak ada entri pada pasal bertingkat untuk digambarkan.')
 
-with st.expander('2. Early Warning (Siswa Berisiko)', expanded=False):
+with st.expander('2. Early Warning (Murid Berisiko)', expanded=False):
     st.info('Ambang surat peringatan resmi sekolah: SP I (-300), SP II (-400), SP III (-500), Rapat Dewan Guru (≤ -600).')
     berisiko = siswa_berisiko(jurnal, None, siswa)
     
@@ -90,18 +90,18 @@ with st.expander('2. Early Warning (Siswa Berisiko)', expanded=False):
         berisiko['label_sp'] = berisiko['status_sp'].apply(lambda x: x['label'])
         
         kolom_berisiko, _ = st.columns([1, 2])
-        kartu_kpi(kolom_berisiko, 'Total Siswa Berisiko (≤ -300)',
+        kartu_kpi(kolom_berisiko, 'Total Murid Berisiko (≤ -300)',
                   f"{len(berisiko[berisiko['poin_minus'] <= -300]):,}", aksen='pelanggaran')
         for t in THRESHOLDS_SP:
             if t['threshold'] < 0:
                 jumlah = len(berisiko[berisiko['poin_minus'] <= t['threshold']])
-                st.write(f"**{t['label']}**: {jumlah} siswa")
+                st.write(f"**{t['label']}**: {jumlah} murid")
         
         berisiko = berisiko.drop(columns=['status_sp'], errors='ignore')
     
-    st.caption('Siswa diurutkan berdasarkan akumulasi poin pelanggaran.')
-    tabel_dengan_ekspor(berisiko, 'siswa_berisiko', 'Belum ada data poin siswa.')
-    tampilkan_gambar(charts.fig_early_warning(jurnal), 'Belum ada poin minus siswa untuk digambarkan.')
+    st.caption('Murid diurutkan berdasarkan akumulasi poin pelanggaran.')
+    tabel_dengan_ekspor(berisiko, 'siswa_berisiko', 'Belum ada data poin murid.')
+    tampilkan_gambar(charts.fig_early_warning(jurnal), 'Belum ada poin minus murid untuk digambarkan.')
 
 with st.expander('3. Analisis per Pasal', expanded=False):
     tabel_dengan_ekspor(pasal, 'analisis_per_pasal', 'Belum ada entri pasal.')
@@ -138,7 +138,7 @@ with st.expander('6. Tren Waktu', expanded=False):
     tabel_dengan_ekspor(harian, 'distribusi_hari_pelanggaran', 'Belum ada pelanggaran dengan tanggal valid.')
 
 with st.expander('7. Konsentrasi Pelanggaran (Pareto)', expanded=False):
-    st.caption('Pelanggaran terkonsentrasi pada sebagian siswa; poin dihitung nilai mutlak.')
+    st.caption('Pelanggaran terkonsentrasi pada sebagian murid; poin dihitung nilai mutlak.')
     if len(jurnal) < 30:
         st.info('Data belum cukup untuk kesimpulan yang andal')
     if konsentrasi.empty:
@@ -146,8 +146,8 @@ with st.expander('7. Konsentrasi Pelanggaran (Pareto)', expanded=False):
     else:
         for ambang in (50, 80):
             ringkas = siswa_penyumbang(jurnal, ambang)
-            st.write(f"**{ringkas['jumlah']} siswa ({ringkas['persen_siswa']:.1f}% dari "
-                     f"{ringkas['total_siswa']} siswa yang pernah melanggar)** menyumbang {ambang}% total poin.")
+            st.write(f"**{ringkas['jumlah']} murid ({ringkas['persen_siswa']:.1f}% dari "
+                     f"{ringkas['total_siswa']} murid yang pernah melanggar)** menyumbang {ambang}% total poin.")
         atas = konsentrasi.head(30).copy()
         atas['label'] = atas['nama'].astype(str)
         gambar = go.Figure()

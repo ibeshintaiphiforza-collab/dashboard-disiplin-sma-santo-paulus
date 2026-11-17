@@ -29,15 +29,15 @@ TINGGI_LOGO = 46
 LABEL_RINGKASAN = {
     'total_entri': 'Jumlah entri',
     'jumlah_entri': 'Jumlah entri',
-    'jumlah_siswa': 'Jumlah siswa',
+    'jumlah_siswa': 'Jumlah murid',
     'jumlah_kelas': 'Jumlah kelas',
     'poin_prestasi': 'Total poin prestasi',
     'poin_pelanggaran': 'Total poin pelanggaran',
     'poin_plus': 'Total poin plus',
     'poin_minus': 'Total poin minus',
     'netto': 'Netto',
-    'siswa_berisiko': 'Jumlah siswa berisiko',
-    'jumlah_siswa_berisiko': 'Jumlah siswa berisiko',
+    'siswa_berisiko': 'Jumlah murid berisiko',
+    'jumlah_siswa_berisiko': 'Jumlah murid berisiko',
 }
 
 
@@ -242,7 +242,7 @@ def _baris_kelas(rekap):
 
 
 def _tabel_kelas(rekap, gaya):
-    return _tabel(['Kelas', 'Poin plus', 'Poin minus', 'Netto', 'Jumlah entri', 'Jumlah siswa'],
+    return _tabel(['Kelas', 'Poin plus', 'Poin minus', 'Netto', 'Jumlah entri', 'Jumlah murid'],
                   _baris_kelas(rekap), [50 * mm, 45 * mm, 45 * mm, 42 * mm, 40 * mm, 45 * mm],
                   gaya, {1: 'RIGHT', 2: 'RIGHT', 3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT'})
 
@@ -276,10 +276,10 @@ def rapor_siswa_pdf(profil, riwayat, periode_label, batas_riwayat=None):
     if not data.empty and 'nis' in data.columns:
         data = data[data['nis'].astype(str) == str(profil.get('nis'))]
 
-    judul = f'Rapor Poin Siswa - {nama if nama != "-" else nis}'
+    judul = f'Rapor Poin Murid - {nama if nama != "-" else nis}'
     alur = _kepala_dokumen(judul, periode_label, gaya)
 
-    alur.append(Paragraph('Identitas Siswa', gaya['seksi']))
+    alur.append(Paragraph('Identitas Murid', gaya['seksi']))
     identitas = [
         ['NIS', nis],
         ['Nama', nama],
@@ -377,7 +377,7 @@ def rekap_kelas_pdf(rekap_kelas_df, detail_df, kelas, periode_label):
     alur.append(Paragraph('Ringkasan per Kelas', gaya['seksi']))
     alur.append(_tabel_kelas(rekap, gaya))
 
-    alur.append(Paragraph(f'Rincian Siswa Kelas {label_kelas}'.strip(), gaya['seksi']))
+    alur.append(Paragraph(f'Rincian Murid Kelas {label_kelas}'.strip(), gaya['seksi']))
     if label_kelas and not detail.empty and 'kelas' in detail.columns:
         detail = detail[detail['kelas'].astype(str).str.strip() == label_kelas]
     baris = []
@@ -401,7 +401,7 @@ def rekap_kelas_pdf(rekap_kelas_df, detail_df, kelas, periode_label):
                        [22 * mm, 72 * mm, 16 * mm, 24 * mm, 24 * mm, 22 * mm, 22 * mm, 65 * mm],
                        gaya, {3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT', 6: 'RIGHT'}))
     alur.append(Spacer(1, 6))
-    alur.append(Paragraph('Status SP dihitung dari akumulasi poin pelanggaran setiap siswa.',
+    alur.append(Paragraph('Status SP dihitung dari akumulasi poin pelanggaran setiap murid.',
                           gaya['catatan']))
 
     return _bangun(alur, landscape(A4), judul)

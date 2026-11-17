@@ -278,7 +278,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
         self.AppTest = AppTest
 
     def test_master_page_paste_preview_and_save_smoke(self):
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '5_Master_Siswa.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '5_Master_Murid.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         app.text_area[0].set_value(PASTE_MASTER).run()
         app.button(key='btn_preview_master').click().run()

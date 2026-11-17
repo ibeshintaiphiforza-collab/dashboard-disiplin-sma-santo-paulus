@@ -100,14 +100,14 @@ st.divider()
 st.subheader('Leaderboard')
 kolom_kiri, kolom_kanan = st.columns(2)
 with kolom_kiri:
-    st.markdown('**Top 20 Siswa Prestasi**')
+    st.markdown('**Top 20 Murid Prestasi**')
     tabel = dashboard.leaderboard_prestasi(jurnal)
     if tabel.empty:
         st.info('Belum ada entri prestasi pada filter ini.')
     else:
         st.dataframe(tabel, width='stretch', hide_index=True)
 with kolom_kanan:
-    st.markdown('**Top 20 Siswa Pelanggaran**')
+    st.markdown('**Top 20 Murid Pelanggaran**')
     tabel = dashboard.leaderboard_pelanggaran(jurnal)
     if tabel.empty:
         st.info('Belum ada entri pelanggaran pada filter ini.')

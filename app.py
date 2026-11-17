@@ -41,14 +41,14 @@ if siswa is not None and not siswa.empty:
 
 kolom1, kolom2, kolom3 = st.columns(3)
 kartu_kpi(kolom1, 'Entri Jurnal', f'{jumlah_entri:,}', 'Seluruh catatan disiplin dan prestasi', 'emas')
-kartu_kpi(kolom2, 'Siswa Terdata', f'{jumlah_siswa:,}', 'Siswa pada jurnal dan master siswa', 'prestasi')
+kartu_kpi(kolom2, 'Murid Terdata', f'{jumlah_siswa:,}', 'Murid pada jurnal dan master murid', 'prestasi')
 kartu_kpi(kolom3, 'Kelas Terdata', f'{jumlah_kelas:,}', 'Kelas aktif pada data saat ini', 'netral')
 
 st.write('')
 
 kolom_dashboard, kolom_analisis, kolom_import = st.columns(3)
 kartu_tautan(kolom_dashboard, 'Dashboard', 'Visualisasi ringkasan komposisi entri, tren bulanan, '
-             'poin per kelas, heatmap, dan leaderboard siswa.', '📊')
+             'poin per kelas, heatmap, dan leaderboard murid.', '📊')
 with kolom_dashboard:
     st.page_link('pages/1_📊_Dashboard.py', label='Buka Dashboard', width='stretch')
 
@@ -65,8 +65,8 @@ with kolom_import:
 st.write('')
 header_halaman('Mulai dari mana?', 'Alur singkat penyiapan data sampai pembacaan laporan.')
 st.markdown(
-    '- **Import CSV** atau **Master Siswa** untuk memasukkan data awal.\n'
+    '- **Import CSV** atau **Master Murid** untuk memasukkan data awal.\n'
     '- **Dashboard** untuk ringkasan visual, **Analisis** untuk pola dan peringatan dini.\n'
     '- **Olah Data** untuk tabel interaktif, ekspor CSV/Excel, dan unduhan PDF.\n'
-    '- **Profil Siswa** untuk rapor poin per siswa beserta riwayat entrinya.'
+    '- **Profil Murid** untuk rapor poin per murid beserta riwayat entrinya.'
 )
