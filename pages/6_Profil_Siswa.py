@@ -88,5 +88,5 @@ if abaikan_filter:
     st.info('Rapor PDF memuat seluruh riwayat entri karena opsi abaikan filter aktif.')
 else:
     st.info('Rapor PDF hanya memuat entri yang lolos filter global di sidebar.')
-st.download_button('PDF Rapor Poin', rapor_siswa_pdf(profil, riwayat, periode_label(jurnal_aktif)),
+st.download_button('PDF Rapor Poin', rapor_siswa_pdf(profil, riwayat, periode_label(jurnal_aktif), batas_riwayat=12),
                    f'{nama_berkas}.pdf', 'application/pdf', key='pdf_rapor')

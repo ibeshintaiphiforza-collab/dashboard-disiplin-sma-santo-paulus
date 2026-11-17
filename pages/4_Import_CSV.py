@@ -51,6 +51,23 @@ if records:
     st.dataframe(pd.DataFrame(preview), width='stretch')
     if invalid:
         st.error('Perbaiki semua error sebelum menyimpan. Tidak ada baris yang disimpan sebagian.')
+        baris_error = []
+        for nomor, row in enumerate(preview, start=1):
+            if row['errors']:
+                baris_error.append({
+                    'baris': nomor,
+                    'nis': row.get('nis', ''),
+                    'nama': row.get('nama', ''),
+                    'kelas': row.get('kelas', ''),
+                    'absen': row.get('absen', ''),
+                    'kode_pasal': row.get('kode_pasal', ''),
+                    'tanggal_kejadian': row.get('tanggal_kejadian', ''),
+                    'poin': row.get('poin', ''),
+                    'alasan': '; '.join(str(alasan) for alasan in row['errors']),
+                })
+        st.download_button('Unduh baris error (CSV)',
+                           pd.DataFrame(baris_error).to_csv(index=False).encode('utf-8-sig'),
+                           'baris_error_import.csv', 'text/csv', key='csv_error')
     confirmed = st.checkbox('Saya telah memeriksa preview dan menyetujui penyimpanan', key='import_confirmed', disabled=bool(invalid))
     if st.button('Simpan import', key='btn_save', disabled=bool(invalid) or not confirmed):
         try:

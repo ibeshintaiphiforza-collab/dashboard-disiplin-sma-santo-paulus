@@ -267,12 +267,15 @@ def _ringkasan_subkategori(data):
     return hasil.sort_values('jumlah_entri', ascending=False).reset_index(drop=True)[kolom]
 
 
-def rapor_siswa_pdf(profil, riwayat, periode_label):
+def rapor_siswa_pdf(profil, riwayat, periode_label, batas_riwayat=None):
     gaya = _gaya()
     data = _frame_aman(riwayat)
     profil = dict(profil or {})
     nama = _teks(profil.get('nama'))
     nis = _teks(profil.get('nis'))
+    if not data.empty and 'nis' in data.columns:
+        data = data[data['nis'].astype(str) == str(profil.get('nis'))]
+
     judul = f'Rapor Poin Siswa - {nama if nama != "-" else nis}'
     alur = _kepala_dokumen(judul, periode_label, gaya)
 
@@ -328,6 +331,10 @@ def rapor_siswa_pdf(profil, riwayat, periode_label):
     if not data.empty and 'tanggal_kejadian' in data.columns:
         urut = (data.assign(_tanggal_urut=pd.to_datetime(data['tanggal_kejadian'], errors='coerce'))
                 .sort_values('_tanggal_urut', kind='stable').drop(columns='_tanggal_urut'))
+    sisa = 0
+    if batas_riwayat is not None and len(urut) > batas_riwayat:
+        sisa = len(urut) - batas_riwayat
+        urut = urut.tail(batas_riwayat)
     baris_entri = []
     for _, baris in urut.iterrows():
         baris_entri.append([
@@ -339,6 +346,22 @@ def rapor_siswa_pdf(profil, riwayat, periode_label):
         ])
     alur.append(_tabel(['Tanggal', 'Kode', 'Uraian', 'Poin', 'Petugas'], baris_entri,
                        [24 * mm, 18 * mm, 94 * mm, 14 * mm, 30 * mm], gaya, {3: 'RIGHT'}))
+    if sisa:
+        alur.append(Paragraph(escape(f'dan {sisa} entri lainnya'), gaya['catatan']))
+
+    alur.append(Paragraph('Tanda Tangan', gaya['seksi']))
+    alur.append(Spacer(1, 10))
+    blok_ttd = [[Paragraph('Orang Tua/Wali', gaya['sel']), Paragraph('Wali Kelas', gaya['sel']),
+                 Paragraph('Kepala Sekolah', gaya['sel'])]]
+    tabel_ttd = Table(blok_ttd, colWidths=[60 * mm, 60 * mm, 60 * mm])
+    tabel_ttd.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('TOPPADDING', (0, 0), (-1, -1), 40),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('LINEBELOW', (0, 0), (-1, -1), 0, colors.white),
+        ('GRID', (0, 0), (-1, 0), 0.4, WARNA_GARIS),
+    ]))
+    alur.append(tabel_ttd)
 
     return _bangun(alur, A4, judul)
 

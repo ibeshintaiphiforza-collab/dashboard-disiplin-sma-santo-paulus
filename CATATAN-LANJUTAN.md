@@ -79,7 +79,7 @@ UPDATE 2026-11-17 (Tahap 0–3 selesai, menunggu konfirmasi untuk Tahap 4)
 - TAHAP 0: Server nyala dan stabil di http://127.0.0.1:8501. Bukti: _stcore/health = "ok", root = 200 OK. start_server.bat dibuat di root (tidak ada virtualenv). Proses Streamlit dipertahankan agar jendela tidak tertutup.
 - TAHAP 1: .gitignore dibuat (data/*.db, data/*.bak*, *.db-journal, __pycache__/, *.pyc, .venv/, venv/, backups/, .kilo/, .streamlit/secrets.toml). Variabel residivis di pages/2_Analisis.py diganti nama jadi pelanggaran_berulang (kosmetik, tanpa perubahan perilaku). Tes: 120 lulus, compile bersih.
 - TAHAP 2: core/backup.py dibuat (sqlite3 backup API, stempel waktu, rotasi 14 terbaru, restore dengan konfirmasi + cadangan pra-restore, PRAGMA integrity_check setelah backup/restore). Bagian "Cadangan Basis Data" ditambahkan ke halaman Olah Data (tombol Backup Sekarang, daftar cadangan, Restore 2 langkah). backup_db.bat dibuat untuk Task Scheduler. tests/test_backup.py ditambahkan (7 tes). Tes total: 120 lulus, compile bersih. Cadangan manual sebelum perubahan: backups/disiplin-SEBELUM-TAHAP2-<ts>.db.
-- TAHAP 3: Uji import batch besar pada salinan DB (data/disiplin.db tidak disentuh, sudah dihapus setelah uji): 301 entri valid -> tersimpan 300, duplikat id_eguru 1 dilewati, waktu 0,05 detik. Preview 6 entri cacat -> semua ditolak (tanggal kosong, tanggal <2000, kode tak dikenal, nama/judul kosong). Temuan: PB-16/PB-39 poin 0 DITOLAK importer (core/importer.py:303-304) meski blueprint menyatakan "poin 0 sah" — pertimbangkan perubahan aturan bisnis hanya setelah konfirmasi. NIS tidak dikenal tidak ditolak importer (ditangkap deteksi_anomali nanti).
+- TAHAP 3: Uji import batch besar pada salinan DB (data/disiplin.db tidak disentuh, sudah dihapus setelah uji): 301 entri valid -> tersimpan 300, duplikat id_eguru 1 dilewati, waktu 0,05 detik. Preview 6 entri cacat -> semua ditolak (tanggal kosong, tanggal <2000, kode tak dikenal, nama/judul kosong). Temuan: poin 0 sah (keputusan pemilik) untuk PB-16/PB-39. NIS tidak dikenal tidak ditolak importer (ditangkap deteksi_anomali nanti).
 
 RINCian file yang diubah (Tahap 0–3):
 - .gitignore (baru)
@@ -90,7 +90,7 @@ RINCian file yang diubah (Tahap 0–3):
 - pages/2_Analisis.py (rename variabel residivis -> pelanggaran_berulang)
 - tests/test_backup.py (baru)
 
-Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jaringan 0.0.0.0, auto-start boot, melengkapi impor historis, risolusi konflik poin 0 PB-16/PB-39.
+Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jaringan 0.0.0.0, auto-start boot, melengkapi impor historis.
 
 
 ## Status sesi perbaikan review
@@ -99,3 +99,10 @@ Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jarin
 - Rollback import tersedia (core/analytics.py: rollback_import_terakhir).
 - Keputusan poin 0 sah untuk PB-16/PB-39 ditetapkan.
 - Temuan unique index dan penolakan duplikat ditunda karena butuh keputusan.
+
+## Status sesi 6-8b
+- Sesi 6-7: anomali tanggal diperbaiki (aturan di importer dan verifikasi tes).
+- Backup eksternal tersedia (core/backup.py, halaman Olah Data, backup_db.bat).
+- Halaman Import CSV punya unduh baris error (CSV utf-8-sig) bila validasi gagal.
+- Rapor Poin individu PDF tersedia di Profil Siswa (identitas, total, per kategori, riwayat, tanda tangan).
+- Tes: 132 lulus, compile bersih.
