@@ -714,10 +714,13 @@ def ringkasan_mingguan(jurnal, tanggal_awal_minggu):
 
     def _tingkat(total):
         level = None
+        peringkat = -1
         for item in THRESHOLDS_SP:
             ambang, label = _item(item)
             if ambang < 0 and total >= abs(ambang):
-                level = label
+                if _peringkat(label) > peringkat:
+                    peringkat = _peringkat(label)
+                    level = label
         return level
 
     def _peringkat(label):
