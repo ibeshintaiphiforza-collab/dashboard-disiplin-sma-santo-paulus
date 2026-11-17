@@ -74,12 +74,22 @@ class DukunganOrangTuaTest(unittest.TestCase):
             prestasi('D1', 2400),
             prestasi('D1', 200, 'dukungan_orang_tua'),
         ])
-        tanpa = daftar_kandidat(data, None)
+        tanpa = daftar_kandidat(data, None, dukungan_ortu='tidak')
         self.assertEqual(tanpa.loc[tanpa['nis'] == 'D1', 'tingkat'].iloc[0], 'II')
         self.assertEqual(tanpa.loc[tanpa['nis'] == 'D1', 'total_prestasi'].iloc[0], 2400)
         dengan = daftar_kandidat(data, None, dukungan_ortu='akademik')
         self.assertEqual(dengan.loc[dengan['nis'] == 'D1', 'tingkat'].iloc[0], 'I')
         self.assertEqual(dengan.loc[dengan['nis'] == 'D1', 'total_prestasi'].iloc[0], 2600)
+
+    def test_default_masuk_humaniora(self):
+        data = jurnal([
+            prestasi('E1', 2400, 'prestasi_humaniora'),
+            prestasi('E1', 200, 'dukungan_orang_tua'),
+        ])
+        hasil = daftar_kandidat(data, None)
+        self.assertEqual(len(hasil), 1)
+        self.assertEqual(hasil['kelompok'].iloc[0], 'Humaniora')
+        self.assertEqual(hasil['total_prestasi'].iloc[0], 2600)
 
 
 if __name__ == '__main__':

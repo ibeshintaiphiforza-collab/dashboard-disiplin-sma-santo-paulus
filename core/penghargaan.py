@@ -84,7 +84,7 @@ def _dalam_periode(data, periode_awal, periode_akhir):
 
 
 def daftar_kandidat(jurnal, pasal, periode_awal=None, periode_akhir=None, batas_pelanggaran=150,
-                    dukungan_ortu='tidak'):
+                    dukungan_ortu='humaniora'):
     if dukungan_ortu not in DUKUNGAN_VALID:
         raise ValueError(f'dukungan_ortu tidak dikenal: {dukungan_ortu}')
     data = _siapkan(jurnal, pasal)

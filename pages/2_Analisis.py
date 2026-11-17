@@ -262,7 +262,8 @@ with st.expander('10. Kandidat Penghargaan', expanded=False):
         batas_pelanggaran = st.number_input('Batas pelanggaran (poin mutlak)', min_value=0, value=150,
                                             step=10, key='penghargaan_batas')
     pilihan_dukungan = ['Tidak dihitung', 'Tambah ke Akademis', 'Tambah ke Humaniora']
-    dukungan = st.radio('Dukungan orang tua', pilihan_dukungan, horizontal=True, key='penghargaan_dukungan')
+    dukungan = st.radio('Dukungan orang tua', pilihan_dukungan, index=2, horizontal=True,
+                        key='penghargaan_dukungan')
 
     periode_awal = None
     periode_akhir = None
