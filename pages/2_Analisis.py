@@ -1,14 +1,16 @@
 import sys
 from pathlib import Path
 
+import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
 from core import analytics_charts as charts
 from core.analytics import (analisis_per_pasal, analisis_per_tingkat, distribusi_hari_pelanggaran,
-                            distribusi_kategori_petugas, eskalasi_tahapan, load_siswa,
-                            peringkat_kelas, pelanggaran_berulang, siswa_berisiko, statistik_petugas,
+                            distribusi_kategori_petugas, eskalasi_tahapan, konsentrasi_pelanggaran,
+                            load_siswa, peta_panas_pasal_kelas, peringkat_kelas, pelanggaran_berulang,
+                            siswa_berisiko, siswa_penyumbang, statistik_petugas,
                             top_pelanggar_per_pasal, tren_bulanan)
 from core.db import init_db, load_referensi_pasal
 from core.export import to_csv_bytes, to_excel_bytes
@@ -63,6 +65,7 @@ petugas = statistik_petugas(jurnal)
 distribusi_petugas = distribusi_kategori_petugas(jurnal)
 bulanan = tren_bulanan(jurnal)
 harian = distribusi_hari_pelanggaran(jurnal)
+konsentrasi = konsentrasi_pelanggaran(jurnal)
 
 with st.expander(f'1. Pelanggaran Berulang ({len(data_pelanggaran_berulang)})', expanded=True):
     st.caption('Siswa yang mengulang kode pasal yang sama, diurutkan dari frekuensi terbanyak.')
@@ -133,3 +136,47 @@ with st.expander('6. Tren Waktu', expanded=False):
     else:
         tampilkan_gambar(charts.fig_hari(jurnal), 'Belum ada tanggal kejadian yang valid.')
     tabel_dengan_ekspor(harian, 'distribusi_hari_pelanggaran', 'Belum ada pelanggaran dengan tanggal valid.')
+
+with st.expander('7. Konsentrasi Pelanggaran (Pareto)', expanded=False):
+    st.caption('Pelanggaran terkonsentrasi pada sebagian siswa; poin dihitung nilai mutlak.')
+    if len(jurnal) < 30:
+        st.info('Data belum cukup untuk kesimpulan yang andal')
+    if konsentrasi.empty:
+        st.info('Belum ada pelanggaran untuk dihitung.')
+    else:
+        for ambang in (50, 80):
+            ringkas = siswa_penyumbang(jurnal, ambang)
+            st.write(f"**{ringkas['jumlah']} siswa ({ringkas['persen_siswa']:.1f}% dari "
+                     f"{ringkas['total_siswa']} siswa yang pernah melanggar)** menyumbang {ambang}% total poin.")
+        atas = konsentrasi.head(30).copy()
+        atas['label'] = atas['nama'].astype(str)
+        gambar = go.Figure()
+        gambar.add_trace(go.Bar(x=atas['label'], y=atas['total_poin'], name='Total poin',
+                                marker_color=charts.WARNA_MINUS))
+        gambar.add_trace(go.Scatter(x=atas['label'], y=atas['persen_kumulatif'], name='Kumulatif (%)',
+                                    yaxis='y2', mode='lines+markers'))
+        gambar.update_layout(yaxis2=dict(overlaying='y', side='right', range=[0, 105],
+                                         title='Persen kumulatif'))
+        st.plotly_chart(gambar, width='stretch')
+        tabel = konsentrasi.head(15)[['nama', 'kelas', 'total_poin', 'jumlah_entri', 'persen_kumulatif']].copy()
+        tabel['persen_kumulatif'] = tabel['persen_kumulatif'].round(1)
+        tabel_dengan_ekspor(tabel, 'konsentrasi_pelanggaran', 'Belum ada pelanggaran untuk dihitung.')
+
+with st.expander('8. Peta Panas Pasal x Kelas', expanded=False):
+    st.caption('Pasal yang sering muncul terkonsentrasi pada kelas tertentu.')
+    dasar = st.radio('Hitung berdasarkan', ['jumlah_kejadian', 'total_poin'], horizontal=True,
+                     key='peta_panas_dasar')
+    if len(jurnal) < 30:
+        st.info('Data belum cukup untuk kesimpulan yang andal')
+    pivot = peta_panas_pasal_kelas(jurnal, dasar)
+    if pivot.empty:
+        st.info('Belum ada pelanggaran untuk dipetakan.')
+    else:
+        st.dataframe(pivot, width='stretch')
+        angka = pivot.replace(0, None)
+        gambar = go.Figure(go.Heatmap(
+            z=angka.values, x=[str(kolom) for kolom in angka.columns],
+            y=[str(baris) for baris in angka.index], colorscale='YlOrRd', hoverongaps=False,
+            text=angka.values, texttemplate='%{text}', textfont=dict(color='#111111')))
+        gambar.update_layout(xaxis_title='Kelas', yaxis_title='Kode pasal')
+        st.plotly_chart(gambar, width='stretch')

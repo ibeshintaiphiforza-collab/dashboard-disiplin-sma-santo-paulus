@@ -275,6 +275,46 @@ class StreamlitSmokeTestCase(TempDbTestCase):
         self.assertFalse(app.exception)
         self.assertFalse(app.dataframe)
 
+class AnalisisBaruTestCase(unittest.TestCase):
+    def _frame(self):
+        import pandas as pd
+        return pd.DataFrame([
+            {'nis': '1', 'nama_siswa': 'A', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -60},
+            {'nis': '1', 'nama_siswa': 'A', 'kelas': '10-1', 'kode_pasal': 'ME-03', 'poin': -20},
+            {'nis': '2', 'nama_siswa': 'B', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -20},
+            {'nis': '3', 'nama_siswa': 'C', 'kelas': '11-1', 'kode_pasal': 'ME-02', 'poin': -10},
+            {'nis': '2', 'nama_siswa': 'B', 'kelas': '10-1', 'kode_pasal': 'PA-01', 'poin': 100},
+        ])
+
+    def test_konsentrasi_kumulatif_berakhir_seratus(self):
+        hasil = analytics.konsentrasi_pelanggaran(self._frame())
+        self.assertEqual(len(hasil), 3)
+        self.assertAlmostEqual(float(hasil['persen_kumulatif'].iloc[-1]), 100.0, places=5)
+        self.assertEqual(hasil['nis'].tolist(), ['1', '2', '3'])
+        self.assertEqual(float(hasil['total_poin'].iloc[0]), 80.0)
+        lima_puluh = analytics.siswa_penyumbang(self._frame(), 50)
+        delapan_puluh = analytics.siswa_penyumbang(self._frame(), 80)
+        self.assertEqual(lima_puluh['jumlah'], 1)
+        self.assertEqual(delapan_puluh['jumlah'], 2)
+        self.assertEqual(lima_puluh['total_siswa'], 3)
+
+    def test_peta_panas_pasal_kelas_tanpa_prestasi(self):
+        pivot = analytics.peta_panas_pasal_kelas(self._frame(), 'jumlah_kejadian')
+        self.assertEqual(pivot.index.tolist(), ['ME-02', 'ME-03'])
+        self.assertEqual(pivot.loc['ME-02', '10-1'], 2)
+        self.assertEqual(pivot.loc['ME-02', '11-1'], 1)
+        self.assertEqual(pivot.loc['ME-03', '11-1'], 0)
+        poin = analytics.peta_panas_pasal_kelas(self._frame(), 'total_poin')
+        self.assertEqual(poin.loc['ME-02', '10-1'], 80)
+        self.assertEqual(int(pivot.values.sum()), 4)
+
+    def test_data_kosong_tidak_error(self):
+        import pandas as pd
+        kosong = pd.DataFrame()
+        self.assertTrue(analytics.konsentrasi_pelanggaran(kosong).empty)
+        self.assertTrue(analytics.peta_panas_pasal_kelas(kosong).empty)
+        self.assertEqual(analytics.siswa_penyumbang(kosong)['jumlah'], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

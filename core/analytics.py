@@ -543,6 +543,55 @@ def distribusi_hari_pelanggaran(df):
     return hasil.sort_values('indeks_hari').reset_index(drop=True)[kolom]
 
 
+def konsentrasi_pelanggaran(df):
+    kolom = ['nis', 'nama', 'kelas', 'total_poin', 'jumlah_entri', 'persen', 'persen_kumulatif']
+    if df is None or df.empty or 'poin' not in df.columns:
+        return pd.DataFrame(columns=kolom)
+    data = normalisasi_kelas(df)
+    data = data[data['poin'] < 0].copy()
+    if data.empty:
+        return pd.DataFrame(columns=kolom)
+    data['nis'] = data['nis'].astype(str)
+    data['poin_mutlak'] = data['poin'].abs()
+    hasil = data.groupby('nis').agg(
+        nama=('nama_siswa', 'last'),
+        kelas=('kelas', 'last'),
+        total_poin=('poin_mutlak', 'sum'),
+        jumlah_entri=('poin', 'size'),
+    ).reset_index()
+    hasil = hasil.sort_values(['total_poin', 'jumlah_entri'], ascending=[False, False]).reset_index(drop=True)
+    total = hasil['total_poin'].sum()
+    hasil['persen'] = hasil['total_poin'] / total * 100 if total else 0.0
+    hasil['persen_kumulatif'] = hasil['persen'].cumsum()
+    return hasil[kolom]
+
+
+def siswa_penyumbang(df, ambang=50):
+    data = konsentrasi_pelanggaran(df)
+    if data.empty:
+        return {'jumlah': 0, 'persen_siswa': 0.0, 'total_siswa': 0}
+    kena = data[data['persen_kumulatif'] >= ambang]
+    jumlah = int(kena.index[0]) + 1 if not kena.empty else int(len(data))
+    return {'jumlah': jumlah, 'persen_siswa': jumlah / len(data) * 100, 'total_siswa': int(len(data))}
+
+
+def peta_panas_pasal_kelas(df, dasar='jumlah_kejadian', batas_pasal=15):
+    if df is None or df.empty or 'kode_pasal' not in df.columns or 'poin' not in df.columns:
+        return pd.DataFrame()
+    data = normalisasi_kelas(df)
+    data = data[data['poin'] < 0].copy()
+    if data.empty:
+        return pd.DataFrame()
+    data['nilai'] = 1 if dasar == 'jumlah_kejadian' else data['poin'].abs()
+    urutan_pasal = (data.groupby('kode_pasal')['nilai'].sum()
+                    .sort_values(ascending=False).head(int(batas_pasal)).index.tolist())
+    data = data[data['kode_pasal'].isin(urutan_pasal)]
+    pivot = data.pivot_table(index='kode_pasal', columns='kelas', values='nilai',
+                             aggfunc='sum', fill_value=0)
+    pivot = pivot.reindex(urutan_pasal)
+    return pivot.loc[:, sorted(pivot.columns, key=lambda nilai: str(nilai))]
+
+
 def hapus_jurnal(ids, confirmed=False, user='operator'):
     if not confirmed:
         raise ValueError('Konfirmasi eksplisit diperlukan')
