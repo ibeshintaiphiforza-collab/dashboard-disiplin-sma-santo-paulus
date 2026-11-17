@@ -1,0 +1,22 @@
+# Database & backup
+data/*.db
+data/*.bak*
+*.db-journal
+backups/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Kilo config
+.kilo/
+
+# Streamlit secrets
+.streamlit/secrets.toml

@@ -1,0 +1,303 @@
+#	ID	Tanggal Input	Tanggal	Nis	Data Siswa	Kode	Poin	Keterangan	Actions
+masukan tanggal
+ 	
+	1	40839	(not set)	20-07-2026,	12613	12-A2 32
+violita cahyadi	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	2	40840	(not set)	20-07-2026,	12419	12-K2 05
+benedict leonard silvino	MD-10	-10	kaos kaki tidak sesuai tata tertib 40Eli48
+murid menggenakan sepatu dan atau kaos kaki tidak sesuai tatib. pasal 115.	
+	3	40841	(not set)	20-07-2026,	12772	11-K1 22
+michelle emanuela frilgio	ME-08	-30	tidak membawa buku prestasi dan disiplin i 40Eli48
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	4	40842	(not set)	21-07-2026,	12470	12-H1 06
+frederico justain santoso	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	5	40843	(not set)	21-07-2026,	12517	12-A1 20
+kayren lie sasongko	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	6	40844	(not set)	21-07-2026,	12411	12-T1 02
+arnold kenneth sony	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	7	40845	(not set)	21-07-2026,	12536	12-A1 23
+mackenzie emmanuel cahyadi	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	8	40846	(not set)	21-07-2026,	12980	10-7 17
+kenneth lie sasongko	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	9	40847	(not set)	21-07-2026,	12466	12-K2 11
+ferdinand de javu putra sparta	ME-08	-30	tidak membawa buku prestasi dan disiplin i 40Eli48
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	10	40848	(not set)	21-07-2026,	12754	11-S2 13
+leonard kentjana giri	ME-08	-30	tidak membawa buku prestasi dan disiplin i 40Eli48
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	11	40849	(not set)	20-07-2026,	12463	12-K2 10
+felicia sandra safui	PB-53	50	petugas kolektan gereja 40Eli48
+murid katolik bertugas sebagai misdinar dalam misa kudus hari minggu, doa umat, pembaca pengumuman, penerima tamu, kolektan, dan persembahan, ... pasal 65.	
+	12	40850	(not set)	20-07-2026,	12463	12-K2 10
+felicia sandra safui	PB-54	75	petugas koor gereja 40Eli48
+murid menjadi lektor, pemazmur, petugas koor, guru sekolah minggu, organis, pemain musik, dancer, pemimpin pujian, guru tpa, petugas doa..pasal 66.	
+	13	40851	(not set)	22-07-2026,	13048	10-4 28
+syafira binti rachman	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	14	40852	(not set)	22-07-2026,	12805	11-K3 28
+richard wijaya	ME-08	-30	tidak membawa buku prestasi dan disiplin i 40Eli48
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	15	40853	(not set)	22-07-2026,	12775	11-K2 26
+millcent ricardo larobu	MD-09	-10	tidak memakai ikat pinggang 40Eli48
+murid tidak mengenakan ikat pinggang warna hitam. pasal 125.	
+	16	40854	(not set)	20-07-2026,	12693	11-K1 14
+felcia ong	PA-09	900	gold winner content creating buana category 40Eli48
+juara 1 tingkat nasional (min. 3 provinsi). pasal 36.	
+	17	40855	(not set)	20-07-2026,	12812	11-A1 17
+shannon wynstelle tandio	PA-19	725	juara 3 ldi (bahasa inggris) 40Eli48
+juara 3 tingkat jawa timur atau tingkat provinsi (min. 3 kabupaten). pasal 37.	
+	18	40856	(not set)	20-07-2026,	12831	11-S2 19
+vanya victory setiyadi	PB-46	100	pengisi acara gms (tari gandrung) 40Eli48
+membuat dan memamerkan karya di luar sekolah yang bisa dibuktikan secara administratif dan objektif pasal 60.	
+	19	40857	(not set)	23-07-2026,	12535	12-K1 20
+louise alexandra soebagio	ME-02	-50	terlambat i 40Eli48
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	20	40858	(not set)	23-07-2026,	12959	10-5 16
+jesslyn angelina wijaya	PC-02	150	menjadi pengurus kelas 40Eli48
+orang tua memberi dukungan kepada anaknya untuk menjadi pengurus kelas yang bertanggungjawab hingga masa kerja kepengurusan berakhir ... pasal 68.	
+	21	40859	(not set)	20-07-2026,	12831	11-S2 19
+vanya victory setiyadi	PB-46	100	mengisi acara jalan sehat (tari gandrung) 40Eli48
+membuat dan memamerkan karya di luar sekolah yang bisa dibuktikan secara administratif dan objektif pasal 60.	
+	22	40860	(not set)	23-07-2026,	12591	12-A1 30
+sherafim richel blessensun suwandi	PC-03	100	menjadi tim adhiwiyata 264one
+orang tua terlibat langsung dalam kegiatan sekolah, seperti lomba dramatisasi puisi, nguri-uri budaya, pps, kegiatan osis, dan lain ... pasal 69.	
+	23	40861	(not set)	23-07-2026,	12567	12-K1 27
+nikita arta lia	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	24	40862	(not set)	23-07-2026,	12551	12-T1 23
+merilyn eiffel hartono	PC-02	150	menjadi pengurus kelas 264one
+orang tua memberi dukungan kepada anaknya untuk menjadi pengurus kelas yang bertanggungjawab hingga masa kerja kepengurusan berakhir ... pasal 68.	
+	25	40863	(not set)	23-07-2026,	12605	12-H2 23
+tiffany cindy	PC-02	150	menjadi pengurus kelas 264one
+orang tua memberi dukungan kepada anaknya untuk menjadi pengurus kelas yang bertanggungjawab hingga masa kerja kepengurusan berakhir ... pasal 68.	
+	26	40864	(not set)	23-07-2026,	12508	12-T1 17
+jonathan mikhael helbert	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	27	40865	(not set)	23-07-2026,	12853	10-2 02
+aiko zhulkarnain	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	28	40866	(not set)	23-07-2026,	12947	10-3 13
+irene anindita gandawidjaja	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	29	40867	(not set)	23-07-2026,	12917	10-1 14
+evgenia putri yowandelova	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	30	40868	(not set)	23-07-2026,	13031	10-1 26
+rhenata natalia limantra	ME-02	-50	terlambat i 264one
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	31	40869	(not set)	23-07-2026,	12961	10-1 18
+jevelyn valencia berlianto	ME-02	-50	terlambat i 264one
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	32	40870	(not set)	24-07-2026,	12632	11-K1 03
+alvin reiko hoetama	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	33	40871	(not set)	24-07-2026,	12646	11-K1 06
+brandon kusumo	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	34	40872	(not set)	24-07-2026,	12534	12-K1 19
+louis marvel	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	35	40873	(not set)	24-07-2026,	12577	12-T1 28
+richard alexander judanto	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	36	40874	(not set)	24-07-2026,	12586	12-A2 27
+sentosa rhais rishen	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	37	40875	(not set)	24-07-2026,	12431	12-H2 03
+celine elyora	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	38	40876	(not set)	24-07-2026,	12429	12-K2 07
+casson emerson salim	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	39	40877	(not set)	24-07-2026,	12574	12-K2 24
+rajeendra wisnu manggala	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	40	40878	(not set)	24-07-2026,	12872	10-5 05
+bevelline chellena vaustine	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	41	40879	(not set)	24-07-2026,	12992	10-5 21
+leticia juana rich	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	42	40880	(not set)	24-07-2026,	12686	11-K3 08
+eleora leonie timothy	PC-05	200	menjadi tim adhiwiyata 264one
+orang tua memberi dukungan kepada anaknya untuk menjadi anggota tim khusus sekolah yang bertanggungjawab hingga masa keanggotaan tim ... pasal 71.	
+	43	40881	(not set)	24-07-2026,	12728	11-K3 19
+joceline rochelle	PC-05	200	menjadi tim adhiwiyata 264one
+orang tua memberi dukungan kepada anaknya untuk menjadi anggota tim khusus sekolah yang bertanggungjawab hingga masa keanggotaan tim ... pasal 71.	
+	44	40882	(not set)	27-07-2026,	13010	10-4 20
+michelle genevieve lambang	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	45	40883	(not set)	27-07-2026,	12915	10-7 10
+evellyne realita kristyawan	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	46	40884	(not set)	27-07-2026,	13058	10-5 30
+veronica febriati	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	47	40885	(not set)	27-07-2026,	12980	10-7 17
+kenneth lie sasongko	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	48	40886	(not set)	27-07-2026,	12907	10-7 09
+dewi sekar sari	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	49	40887	(not set)	27-07-2026,	13037	10-4 23
+samuel lexie hendrianto nusaputra	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	50	40888	(not set)	27-07-2026,	12887	10-1 09
+christian ardi nugrahanto	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	51	40889	(not set)	27-07-2026,	12908	10-1 12
+dife hendry pradana	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	52	40890	(not set)	27-07-2026,	12999	10-4 19
+maldo beanal	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	53	40891	(not set)	27-07-2026,	12965	10-6 18
+john timothy alexander	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	54	40892	(not set)	27-07-2026,	13048	10-4 28
+syafira binti rachman	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	55	40893	(not set)	27-07-2026,	12848	10-7 01
+adrian adikarjo	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	56	40894	(not set)	27-07-2026,	12930	10-5 14
+fitrano azhar taufiqulhakim	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	57	40895	(not set)	27-07-2026,	12975	10-1 21
+keanna eoudia putri	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	58	40896	(not set)	27-07-2026,	12870	10-1 05
+baby merry jovansky phefferkorn	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	59	40897	(not set)	27-07-2026,	12917	10-1 14
+evgenia putri yowandelova	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	60	40898	(not set)	27-07-2026,	13043	10-1 28
+shalomita kenzie irawan	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	61	40899	(not set)	27-07-2026,	13056	10-6 32
+velove celestyn lodianto	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	62	40900	(not set)	27-07-2026,	12872	10-5 05
+bevelline chellena vaustine	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	63	40901	(not set)	27-07-2026,	12894	10-1 10
+cindy ang	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	64	40902	(not set)	27-07-2026,	12967	10-4 15
+jonathan richie tjondrowibowo	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	65	40903	(not set)	27-07-2026,	13041	10-4 26
+sem alethinos christo	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	66	40904	(not set)	27-07-2026,	13064	10-4 30
+yefira putri daprilia	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	67	40905	(not set)	27-07-2026,	13019	10-3 25
+nicholas axel tanugraha	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	68	40906	(not set)	27-07-2026,	12891	10-4 06
+christopher calvin tanugraha	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	69	40907	(not set)	27-07-2026,	12952	10-4 13
+jason nathaniel suhardja	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	70	40908	(not set)	27-07-2026,	12941	10-6 13
+giovana sai albertine	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	71	40909	(not set)	27-07-2026,	12927	10-4 09
+fernando suseno	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	72	40910	(not set)	27-07-2026,	12907	10-7 09
+dewi sekar sari	MD-04	-20	tidak memakai dasi 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	73	40911	(not set)	27-07-2026,	13037	10-4 23
+samuel lexie hendrianto nusaputra	MD-09	-10	tidak memakai ikat pinggang 264one
+murid tidak mengenakan ikat pinggang warna hitam. pasal 125.	
+	74	40912	(not set)	27-07-2026,	12877	10-6 07
+caroline rachel sugianto	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	75	40913	(not set)	27-07-2026,	13002	10-6 26
+margareth melyani thejaya	ME-02	-50	terlambat i 264one
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	76	40914	(not set)	27-07-2026,	13049	10-6 31
+sylanna	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	77	40915	(not set)	27-07-2026,	12911	10-6 09
+dominique vallerine budiono	MD-10	-10	tidak memakai sepatu hitam 264one
+murid menggenakan sepatu dan atau kaos kaki tidak sesuai tatib. pasal 115.	
+	78	40916	(not set)	27-07-2026,	12669	11-K1 11
+cynthia laurent	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	79	40917	(not set)	27-07-2026,	12553	12-H2 17
+michael samuel wijaya	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	80	40918	(not set)	27-07-2026,	12453	12-H2 08
+edward sugiarta wijaya	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	81	40919	(not set)	27-07-2026,	12559	12-K2 22
+natasya berliana elby putri	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	82	40920	(not set)	27-07-2026,	12574	12-K2 24
+rajeendra wisnu manggala	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	83	40921	(not set)	27-07-2026,	12614	12-K2 30
+virgilia lorenza handoyo	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	84	40922	(not set)	27-07-2026,	12619	12-K2 31
+wilson lewis rianto	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	85	40923	(not set)	27-07-2026,	12539	12-K2 21
+marco genio	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	86	40924	(not set)	27-07-2026,	12429	12-K2 07
+casson emerson salim	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	87	40925	(not set)	27-07-2026,	12817	11-K2 31
+steeven imanuel sugiharto	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	88	40926	(not set)	27-07-2026,	12500	12-K1 10
+jocelyn angelica christy	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	89	40927	(not set)	27-07-2026,	12489	12-H2 13
+i ketut satrya kurniawan	ME-02	-50	terlambat i 264one
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	90	40928	(not set)	27-07-2026,	12476	12-H1 07
+george fernando hartanto	ME-02	-50	terlambat i 264one
+murid terlambat masuk sekolah untuk pertama kali. pasal 14.	
+	91	40929	(not set)	27-07-2026,	12575	12-T1 27
+reynaldy christian hartono	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	92	40930	(not set)	27-07-2026,	12600	12-A2 29
+steve imannuel joseph sanjaya	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	93	40931	(not set)	27-07-2026,	12579	12-H2 21
+rosalinda angelia young	ME-08	-30	tidak membawa buku prestasi dan disiplin i 264one
+murid tidak membawa buku prestasi dan disiplin untuk pertama kali. pasal 128a.	
+	94	40932	(not set)	27-07-2026,	12418	12-K2 04
+belinda violentina	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	95	40933	(not set)	27-07-2026,	12577	12-T1 28
+richard alexander judanto	MD-04	-20	tidak memakai dasi 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	96	40934	(not set)	27-07-2026,	12466	12-K2 11
+ferdinand de javu putra sparta	MD-04	-20	tidak memakai label nama 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	97	40935	(not set)	27-07-2026,	12466	12-K2 11
+ferdinand de javu putra sparta	MD-09	-10	tidak menggunakan ikat pinggang warna hitam 264one
+murid tidak mengenakan ikat pinggang warna hitam. pasal 125.	
+	98	40936	(not set)	27-07-2026,	12506	12-H1 09
+jollin florencia pramono	MD-04	-20	salah memakai seragam 264one
+murid memakai seragam sekolah yang berlainan atau tidak memakai atribut dengan benar (termasuk seragam olahraga, bed nama, dasi). pasal 114.	
+	99	40937	(not set)	27-07-2026,	12718	11-K2 17
+heavenly nethaniel	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.	
+	100	40938	(not set)	27-07-2026,	12738	11-K3 21
+jozua maxwell arifin	ME-11	-30	buku prestasi dan disiplin tidak lengkap 264one
+murid belum melengkapi bagian data pribadi murid dan surat pernyataan orang tua pada buku prestasi ... pasal 128b.
