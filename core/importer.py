@@ -23,11 +23,13 @@ def text_value(value):
     return '' if value is None or pd.isna(value) else str(value).strip()
 
 
-def integer(value):
+def integer(value, allow_zero=False):
     value = text_value(value)
     if not re.fullmatch(r'[+-]?\d+', value):
         raise ValueError('Harus bilangan bulat')
     result = int(value)
+    if allow_zero and result == 0:
+        return result
     if not -(2 ** 63) <= result < 2 ** 63:
         raise ValueError('Di luar batas integer SQLite')
     return result
@@ -240,7 +242,7 @@ class ImportValidator:
     def __init__(self, pasal_ref):
         self.pasal_ref = pasal_ref
 
-    def normalize_record(self, record, existing_ids=None):
+    def normalize_record(self, record, existing_ids=None, existing_keys=None, seen_keys=None):
         result = {field: text_value(record.get(field)) for field in FIELDS}
         errors, warnings = [], []
         ident = record.get('id_eguru', record.get('id'))
@@ -293,23 +295,31 @@ class ImportValidator:
                 errors.append(f'{field} tidak valid')
         kode = result['kode_pasal']
         if kode not in self.pasal_ref.index:
-            errors.append('Kode pasal tidak dikenal')
+            warnings.append('Kode pasal tidak dikenal')
         else:
             ref = self.pasal_ref.loc[kode]
             try:
                 if not result['poin'] and ref['mode_poin'] == 'fixed':
                     result['poin'] = int(ref['poin_default'])
                 else:
-                    result['poin'] = integer(result['poin'])
+                    result['poin'] = integer(result['poin'], allow_zero=True)
                 poin = result['poin']
                 if poin * int(ref['arah_tanda']) < 0:
                     errors.append('Tanda poin tidak sesuai pasal')
                 if ref['mode_poin'] == 'manual' and poin == 0:
-                    errors.append('Poin manual wajib diisi bukan nol')
+                    pass
                 if ref['mode_poin'] == 'fixed' and poin != int(ref['poin_default']):
                     warnings.append('Poin berbeda dari poin baku')
             except ValueError:
                 errors.append('Poin wajib bilangan bulat; mode manual wajib diisi')
+        kunci = (result['nis'], result['tanggal_kejadian'], result['kode_pasal'])
+        if all(kunci):
+            if kunci in (existing_keys or set()):
+                warnings.append('Duplikat NIS+tanggal+pasal dengan data tersimpan')
+            elif kunci in (seen_keys or set()):
+                warnings.append('Duplikat NIS+tanggal+pasal dalam data ini')
+            if seen_keys is not None:
+                seen_keys.add(kunci)
         return result, errors, warnings
 
     def validate_record(self, record, existing_ids=None):
@@ -321,9 +331,13 @@ def preview_records(records, conn):
     ref = pd.read_sql_query('SELECT * FROM pasal', conn).set_index('kode')
     validator = ImportValidator(ref)
     existing = {row[0] for row in conn.execute('SELECT id FROM jurnal')}
+    existing_keys = {(str(row[0]), row[1], row[2])
+                     for row in conn.execute('SELECT nis, tanggal_kejadian, kode_pasal FROM jurnal')}
+    seen_keys = set()
     preview = []
     for record in records:
-        normalized, errors, warnings = validator.normalize_record(record, existing)
+        normalized, errors, warnings = validator.normalize_record(
+            record, existing, existing_keys, seen_keys)
         ident = normalized['id_eguru']
         if ident is not None:
             existing.add(ident)

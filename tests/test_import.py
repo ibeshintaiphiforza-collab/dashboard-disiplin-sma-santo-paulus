@@ -251,18 +251,21 @@ class ImportTestCase(unittest.TestCase):
                 'keterangan': '', 'petugas': '', 'timestamp_input': ''}
         cases = {
             'tanggal_kejadian': '31-02-2026', 'nis': '12a', 'kelas': 'XII A',
-            'kode_pasal': 'ZZ-99', 'poin': 'abc', 'id': 'x', 'nama_siswa': '',
+            'poin': 'abc', 'id': 'x', 'nama_siswa': '',
         }
         for field, value in cases.items():
             with self.subTest(field=field):
                 errors, _ = validator.validate_record(dict(base, **{field: value}))
                 self.assertTrue(errors)
-        errors, _ = validator.validate_record(dict(base, kode_pasal='ME-02', poin='50'))
-        self.assertTrue(errors)
-        errors, _ = validator.validate_record(dict(base, kode_pasal='PB-16', poin='', judul='j'))
-        self.assertTrue(errors)
+        errors, warnings = validator.validate_record(dict(base, kode_pasal='ZZ-9', poin='10'))
+        self.assertEqual(errors, [])
+        self.assertTrue(warnings)
         errors, warnings = validator.validate_record(dict(base, kode_pasal='PB-16', poin='120'))
         self.assertEqual((errors, warnings), ([], []))
+        errors, warnings = validator.validate_record(dict(base, kode_pasal='PB-16', poin='0'))
+        self.assertEqual((errors, warnings), ([], []))
+        errors, _ = validator.validate_record(dict(base, kode_pasal='PB-16', poin='-5'))
+        self.assertTrue(errors)
         errors, warnings = validator.validate_record(dict(base, poin='-40'))
         self.assertEqual(errors, [])
         self.assertTrue(warnings)
