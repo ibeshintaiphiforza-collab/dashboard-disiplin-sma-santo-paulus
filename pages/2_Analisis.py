@@ -10,10 +10,11 @@ sys.path.append(str(Path(__file__).parent.parent))
 from core import analytics_charts as charts
 from core.analytics import (analisis_per_pasal, analisis_per_tingkat, distribusi_hari_pelanggaran,
                             distribusi_kategori_petugas, eskalasi_tahapan, konsentrasi_pelanggaran,
-                            load_siswa, peta_panas_pasal_kelas, peringkat_kelas, pelanggaran_berulang,
-                            ringkasan_mingguan, siswa_berisiko, siswa_penyumbang, statistik_petugas,
-                            top_pelanggar_per_pasal, tren_bulanan)
+                            load_jurnal, load_siswa, peta_panas_pasal_kelas, peringkat_kelas,
+                            pelanggaran_berulang, ringkasan_mingguan, siswa_berisiko, siswa_penyumbang,
+                            statistik_petugas, top_pelanggar_per_pasal, tren_bulanan)
 from core.db import init_db, load_referensi_pasal
+from core.penghargaan import daftar_kandidat
 from core.export import to_csv_bytes, to_excel_bytes
 from core.session import sidebar_filters
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
@@ -28,6 +29,7 @@ init_db()
 load_referensi_pasal()
 
 jurnal = sidebar_filters()
+jurnal_penuh = load_jurnal()
 siswa = load_siswa()
 
 if jurnal.empty:
@@ -238,3 +240,65 @@ with st.expander('9. Ringkasan Mingguan', expanded=False):
                          hide_index=True)
         else:
             st.caption('Tidak ada')
+
+with st.expander('10. Kandidat Penghargaan', expanded=False):
+    st.caption('Dihitung dari seluruh data jurnal, tidak mengikuti filter tanggal di sidebar.')
+    tanggal_penuh = pd.to_datetime(jurnal_penuh['tanggal_kejadian'], errors='coerce').dropna() \
+        if 'tanggal_kejadian' in jurnal_penuh.columns else pd.Series(dtype='datetime64[ns]')
+
+    pilihan_periode = ['Semua data']
+    tahun_ajaran = []
+    if not tanggal_penuh.empty:
+        for tahun in range(int(tanggal_penuh.min().year), int(tanggal_penuh.max().year) + 1):
+            tahun_ajaran.append(tahun)
+            pilihan_periode.append(f'Tahun ajaran {tahun}/{tahun + 1}')
+            pilihan_periode.append(f'Semester ganjil {tahun}/{tahun + 1} (Jul-Des)')
+            pilihan_periode.append(f'Semester genap {tahun}/{tahun + 1} (Jan-Jun)')
+
+    kolom_periode, kolom_batas = st.columns(2)
+    with kolom_periode:
+        periode = st.selectbox('Periode', pilihan_periode, key='penghargaan_periode')
+    with kolom_batas:
+        batas_pelanggaran = st.number_input('Batas pelanggaran (poin mutlak)', min_value=0, value=150,
+                                            step=10, key='penghargaan_batas')
+    pilihan_dukungan = ['Tidak dihitung', 'Tambah ke Akademis', 'Tambah ke Humaniora']
+    dukungan = st.radio('Dukungan orang tua', pilihan_dukungan, horizontal=True, key='penghargaan_dukungan')
+
+    periode_awal = None
+    periode_akhir = None
+    if periode != 'Semua data':
+        tahun = tahun_ajaran[pilihan_periode.index(periode) // 3]
+        if periode.startswith('Tahun ajaran'):
+            periode_awal = pd.Timestamp(tahun, 7, 1)
+            periode_akhir = pd.Timestamp(tahun + 1, 6, 30)
+        elif periode.startswith('Semester ganjil'):
+            periode_awal = pd.Timestamp(tahun, 7, 1)
+            periode_akhir = pd.Timestamp(tahun, 12, 31)
+        else:
+            periode_awal = pd.Timestamp(tahun + 1, 1, 1)
+            periode_akhir = pd.Timestamp(tahun + 1, 6, 30)
+
+    dukungan_kode = {'Tidak dihitung': 'tidak', 'Tambah ke Akademis': 'akademik',
+                     'Tambah ke Humaniora': 'humaniora'}[dukungan]
+
+    kandidat = daftar_kandidat(jurnal_penuh, load_referensi_pasal(), periode_awal, periode_akhir,
+                               batas_pelanggaran=int(batas_pelanggaran), dukungan_ortu=dukungan_kode)
+
+    if kandidat.empty:
+        st.info('Belum ada murid yang mencapai tingkat IV pada periode ini.')
+    else:
+        tampil = kandidat.copy()
+        tampil['memenuhi_syarat'] = tampil['memenuhi_syarat'].map({True: 'Ya', False: 'Tidak'})
+        tampil['piala'] = tampil['piala'].map({True: 'Ya', False: 'Tidak'})
+
+        def _tandai(baris):
+            if baris['memenuhi_syarat'] == 'Tidak':
+                return ['background-color: #fde2e1'] * len(baris)
+            return [''] * len(baris)
+
+        st.dataframe(tampil.style.apply(_tandai, axis=1), width='stretch', hide_index=True)
+        st.download_button('CSV kandidat_penghargaan', to_csv_bytes(tampil), 'kandidat_penghargaan.csv',
+                           'text/csv', key='csv_kandidat_penghargaan')
+
+    st.caption('Daftar kandidat, bukan keputusan. Tafsir syarat pelanggaran dan periode perlu '
+               'dikonfirmasi dari Buku Prestasi dan Disiplin.')
