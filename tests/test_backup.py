@@ -36,13 +36,12 @@ class BackupTestCase(unittest.TestCase):
             con.close()
 
     def test_backup_membuat_berkas_dan_integritas_ok(self):
-        berkas, dihapus = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
-        self.assertTrue(berkas.exists())
+        berkas, dihapus, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         self.assertTrue(backup_mod.integritas_db(berkas))
         self.assertEqual(dihapus, [])
 
     def test_backup_nama_berstempel_waktu(self):
-        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         self.assertTrue(berkas.name.startswith('disiplin-'))
         self.assertTrue(berkas.name.endswith('.db'))
 
@@ -63,7 +62,7 @@ class BackupTestCase(unittest.TestCase):
         self.assertEqual(len(dihapus), 3)
 
     def test_restore_ke_db_baru(self):
-        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.restore_dir / 'tujuan.db'
         self.restore_dir.mkdir(parents=True, exist_ok=True)
         pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
@@ -79,7 +78,7 @@ class BackupTestCase(unittest.TestCase):
         self.assertEqual(n, 2)
 
     def test_restore_membuat_cadangan_pra_restore(self):
-        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.restore_dir / 'tujuan.db'
         self.restore_dir.mkdir(parents=True, exist_ok=True)
         # salin sumber sebagai db saat ini
@@ -91,7 +90,7 @@ class BackupTestCase(unittest.TestCase):
         self.assertTrue(pre.name.startswith('disiplin-prerestore-'))
 
     def test_restore_tanpa_konfirmasi_ditolak(self):
-        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         with self.assertRaises(ValueError):
             backup_mod.restore_db(berkas, confirmed=False)
 
@@ -116,7 +115,7 @@ class BackupTestCase(unittest.TestCase):
 
     def test_restore_gagal_saat_db_terkunci(self):
         from unittest import mock
-        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.restore_dir / 'tujuan.db'
         self.restore_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(self.src_db, db_tujuan)
@@ -131,7 +130,7 @@ class BackupTestCase(unittest.TestCase):
         sumber_lain = self.tmp_path / 'lain' / 'sumber.db'
         sumber_lain.parent.mkdir(parents=True, exist_ok=True)
         self._buat_db_sumber(sumber_lain)
-        berkas, _ = backup_mod.backup_db(db_path=sumber_lain, backup_dir=self.backup_dir, keep=14)
+        berkas, _, _ = backup_mod.backup_db(db_path=sumber_lain, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.tmp_path / 'hasil' / 'target.db'
         db_tujuan.parent.mkdir(parents=True, exist_ok=True)
         pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
@@ -143,6 +142,66 @@ class BackupTestCase(unittest.TestCase):
         finally:
             con.close()
         self.assertEqual(n, 2)
+
+
+class EksternalTestCase(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.tmp_path = Path(self.tmp.name)
+        self.src_db = self.tmp_path / 'sumber.db'
+        self.backup_dir = self.tmp_path / 'backups'
+        self.eksternal = self.tmp_path / 'ext'
+        self.eksternal.mkdir(parents=True, exist_ok=True)
+        self.konfig = self.tmp_path / 'backup_config.json'
+        self._buat_db()
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def _buat_db(self):
+        con = sqlite3.connect(str(self.src_db))
+        try:
+            con.execute('CREATE TABLE jurnal (id INTEGER PRIMARY KEY, nis TEXT)')
+            con.execute("INSERT INTO jurnal (nis) VALUES ('12403')")
+            con.commit()
+        finally:
+            con.close()
+
+    def _tulis_konfig(self, folder):
+        self.konfig.write_text('{"folder_eksternal": "%s"}' % str(folder).replace('\\', '\\\\'), encoding='utf-8')
+
+    def test_salin_eksternal_identik_dan_integritas(self):
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        self._tulis_konfig(self.eksternal)
+        pesan = backup_mod.salin_ke_eksternal(berkas, konfig_path=self.konfig)
+        self.assertIn('berhasil', pesan)
+        salinan = self.eksternal / berkas.name
+        self.assertTrue(salinan.exists())
+        self.assertEqual(salinan.read_bytes(), berkas.read_bytes())
+        self.assertTrue(backup_mod.integritas_db(salinan))
+
+    def test_folder_tidak_ada_hanya_peringatan(self):
+        berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        self._tulis_konfig(self.tmp_path / 'tidak-ada')
+        pesan = backup_mod.salin_ke_eksternal(berkas, konfig_path=self.konfig)
+        self.assertEqual(pesan, 'Folder eksternal tidak tersedia, backup lokal tetap aman.')
+
+    def test_rotasi_eksternal_14_dan_file_lain_utuh(self):
+        lain = self.eksternal / 'catatan.txt'
+        lain.write_text('jangan dihapus', encoding='utf-8')
+        for i in range(16):
+            f = self.eksternal / f'disiplin-2026010{i:02d}-000000.db'
+            shutil.copy2(str(self.src_db), str(f))
+            ts = 1000000 + i
+            os.utime(str(f), (ts, ts))
+        berkas = self.eksternal / 'disiplin-20260101-999999.db'
+        shutil.copy2(str(self.src_db), str(berkas))
+        self._tulis_konfig(self.eksternal)
+        backup_mod.salin_ke_eksternal(berkas, konfig_path=self.konfig)
+        sisa = sorted(p.name for p in self.eksternal.glob('disiplin-*.db'))
+        self.assertEqual(len(sisa), 14)
+        self.assertTrue(lain.exists())
+        self.assertNotIn('disiplin-2026010000-000000.db', sisa)
 
 
 if __name__ == '__main__':

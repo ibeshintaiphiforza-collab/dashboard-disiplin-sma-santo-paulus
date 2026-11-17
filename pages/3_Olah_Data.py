@@ -154,15 +154,40 @@ col_b1, col_b2 = st.columns([1, 2])
 with col_b1:
     if st.button('Backup Sekarang', key='btn_backup'):
         try:
-            berkas, dihapus = backup_mod.backup_db()
+            berkas, dihapus, pesan_eksternal = backup_mod.backup_db()
             st.success(f'Cadangan dibuat: {berkas.name}')
             if dihapus:
                 st.caption(f'Rotasi: {len(dihapus)} cadangan lama dihapus.')
+            if pesan_eksternal:
+                if 'tidak tersedia' in pesan_eksternal or 'gagal' in pesan_eksternal:
+                    st.warning(pesan_eksternal)
+                else:
+                    st.info(pesan_eksternal)
             st.rerun()
         except Exception as exc:
             st.error(f'Backup gagal: {exc}')
 with col_b2:
     st.caption('Cadangan disimpan di folder backups/ dengan stempel waktu (sqlite3 backup API). Rotasi menyimpan 14 cadangan terbaru.')
+
+folder_eksternal = st.text_input('Salinan cadangan ke folder eksternal (mis. E:\\backup-disiplin, kosongkan untuk menonaktifkan)', value=backup_mod.baca_folder_eksternal(), key='input_eksternal')
+col_e1, col_e2 = st.columns([1, 2])
+with col_e1:
+    if st.button('Simpan', key='btn_simpan_eksternal'):
+        backup_mod.tulis_folder_eksternal(folder_eksternal)
+        st.success('Pengaturan folder eksternal disimpan.')
+with col_e2:
+    if st.button('Tes folder', key='btn_tes_eksternal'):
+        folder_uji = Path(folder_eksternal.strip()) if folder_eksternal.strip() else None
+        if folder_uji is None or not folder_uji.is_dir():
+            st.warning(backup_mod.PESAN_EKSTERNAL_TIDAK_ADA)
+        else:
+            uji = folder_uji / '.tes-tulis.tmp'
+            try:
+                uji.write_text('tes', encoding='utf-8')
+                uji.unlink()
+                st.success('Folder eksternal dapat ditulis.')
+            except OSError as exc:
+                st.warning(f'Folder eksternal tidak dapat ditulis: {exc}')
 daftar = backup_mod.daftar_backup()
 if daftar:
     st.write('Daftar cadangan:')

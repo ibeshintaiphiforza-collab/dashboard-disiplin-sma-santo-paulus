@@ -3,6 +3,7 @@ data/*.db
 data/*.bak*
 *.db-journal
 backups/
+data/backup_config.json
 
 # Python
 __pycache__/

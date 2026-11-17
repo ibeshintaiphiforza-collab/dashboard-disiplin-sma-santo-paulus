@@ -1,4 +1,5 @@
 """Cadangan dan pulihan basis data disiplin menggunakan sqlite3 backup API."""
+import json
 import os
 import shutil
 import sqlite3
@@ -10,6 +11,26 @@ from core.db import DB_PATH
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent.parent / 'backups'
 DEFAULT_ROTATION_KEEP = 14
 POLA_BACKUP = ['disiplin-*.db', 'disiplin-prerestore-*.db']
+KONFIG_EKSTERNAL = Path(__file__).resolve().parent.parent / 'data' / 'backup_config.json'
+EKSTERNAL_KEEP = 14
+PESAN_EKSTERNAL_TIDAK_ADA = 'Folder eksternal tidak tersedia, backup lokal tetap aman.'
+
+
+def baca_folder_eksternal(konfig_path=KONFIG_EKSTERNAL):
+    try:
+        with open(konfig_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        nilai = (data or {}).get('folder_eksternal') or ''
+        return str(nilai).strip()
+    except (OSError, ValueError):
+        return ''
+
+
+def tulis_folder_eksternal(folder, konfig_path=KONFIG_EKSTERNAL):
+    konfig_path = Path(konfig_path)
+    konfig_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(konfig_path, 'w', encoding='utf-8') as f:
+        json.dump({'folder_eksternal': str(folder or '').strip()}, f, ensure_ascii=False, indent=2)
 
 
 def stempel_waktu():
@@ -92,7 +113,44 @@ def backup_db(db_path=DB_PATH, backup_dir=DEFAULT_BACKUP_DIR, keep=DEFAULT_ROTAT
         raise RuntimeError(f'Backup gagal pemeriksaan integritas: {keluar}')
 
     dihapus = rotasi_backup(backup_dir, keep=keep)
-    return keluar, dihapus
+    try:
+        pesan_eksternal = salin_ke_eksternal(keluar)
+    except Exception:
+        pesan_eksternal = PESAN_EKSTERNAL_TIDAK_ADA
+    return keluar, dihapus, pesan_eksternal
+
+
+def salin_ke_eksternal(path_backup, konfig_path=KONFIG_EKSTERNAL, keep=EKSTERNAL_KEEP):
+    path_backup = Path(path_backup)
+    folder = baca_folder_eksternal(konfig_path)
+    if not folder:
+        return ''
+    tujuan_dir = Path(folder)
+    if not tujuan_dir.is_dir():
+        return PESAN_EKSTERNAL_TIDAK_ADA
+
+    tujuan = tujuan_dir / path_backup.name
+    sementara = tujuan_dir / (path_backup.name + '.tmp')
+    try:
+        shutil.copy2(str(path_backup), str(sementara))
+        if not integritas_db(sementara):
+            sementara.unlink(missing_ok=True)
+            return f'Salinan eksternal gagal pemeriksaan integritas: {path_backup.name}'
+        os.replace(str(sementara), str(tujuan))
+    except OSError:
+        try:
+            sementara.unlink(missing_ok=True)
+        except OSError:
+            pass
+        return PESAN_EKSTERNAL_TIDAK_ADA
+
+    berkas = sorted(tujuan_dir.glob('disiplin-*.db'), key=lambda p: p.stat().st_mtime, reverse=True)
+    for lama in berkas[int(keep):]:
+        try:
+            lama.unlink()
+        except OSError:
+            pass
+    return f'Salinan eksternal berhasil: {tujuan}'
 
 
 def restore_db(backup_path, db_path=DB_PATH, confirmed=False, pre_backup_dir=DEFAULT_BACKUP_DIR):
@@ -128,7 +186,9 @@ def restore_db(backup_path, db_path=DB_PATH, confirmed=False, pre_backup_dir=DEF
 
 
 if __name__ == '__main__':
-    berkas, dihapus = backup_db()
+    berkas, dihapus, pesan_eksternal = backup_db()
     print(f'Backup berhasil: {berkas}')
     if dihapus:
         print(f'Rotasi: {len(dihapus)} cadangan lama dihapus.')
+    if pesan_eksternal:
+        print(pesan_eksternal)
