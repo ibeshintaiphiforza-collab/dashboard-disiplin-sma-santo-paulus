@@ -7,8 +7,10 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
+import pandas as pd
+
 from core import analytics, db, pdf
-from core.importer import parse_master_siswa, save_master_siswa
+from core.importer import csv_baris_error, parse_master_siswa, preview_records, save_master_siswa
 
 PASTE_MASTER = (
     '12403\tALESSANDRO WILLIAM HARDIANTO\t12-T1\t01\n'
@@ -179,6 +181,76 @@ class PdfLogoTestCase(TempDbTestCase):
             self.assertIn(b'SMA Katolik Santo Paulus Jember', data)
         finally:
             pdf.LOGO_PDF, pdf.LOGO_SEKOLAH = simpan_pdf, simpan_sekolah
+
+    def data_uji(self):
+        self.seed()
+
+    def periksa_pdf(self, data, minimal=2000):
+        self.assertIsInstance(data, bytes)
+        self.assertTrue(data.startswith(b'%PDF'))
+        self.assertGreaterEqual(len(data), minimal)
+        self.assertIn(b'%%EOF', data)
+        self.assertGreaterEqual(len(POLA_HALAMAN.findall(data)), 1)
+
+    def _teks_pdf(self, data):
+        potongan = re.findall(rb'\((.*?)(?<!\\)\)', data, re.S)
+        return b' '.join(potongan).decode('latin-1')
+
+    def test_csv_baris_error_memuat_baris_dan_alasan(self):
+        self.data_uji()
+        records = [
+            {'id_eguru': '9001', 'tanggal_kejadian': '2026-08-20', 'nis': '12403',
+             'nama_siswa': 'ALESSANDRO WILLIAM HARDIANTO', 'kelas': '12', 'absen': '01',
+             'kode_pasal': 'ME-02', 'judul': 'terlambat', 'poin': '-50', 'petugas': 'A'},
+            {'id_eguru': '9002', 'tanggal_kejadian': '2026-08-21', 'nis': '13069',
+             'nama_siswa': 'RUSSELL NICKLAUS', 'kelas': '11', 'absen': '34',
+             'kode_pasal': 'KODE-SALAH', 'judul': 'cacat', 'poin': '-5', 'petugas': 'A'},
+        ]
+        conn = db.get_conn()
+        try:
+            preview = preview_records(records, conn)
+        finally:
+            conn.close()
+        self.assertTrue(preview[0]['errors'] == [] or preview[1]['errors'])
+        if preview[0]['errors']:
+            self.skipTest('record pertama ternyata ditolak validator')
+        data = csv_baris_error(preview)
+        self.assertIsInstance(data, bytes)
+        self.assertTrue(data.startswith(b'\xef\xbb\xbf'))
+        teks = data.decode('utf-8-sig')
+        self.assertIn('alasan', teks)
+        self.assertIn('baris', teks)
+        self.assertIn('; ', teks)
+        self.assertNotIn('12403', teks)
+        self.assertEqual(len(teks.strip().splitlines()), 2)
+
+    def test_rapor_siswa_hanya_memuat_nis_terpilih(self):
+        self.data_uji()
+        self.jurnal = analytics.load_jurnal()
+        self.siswa = analytics.load_siswa()
+        profil = analytics.profil_siswa(self.jurnal, '12403', self.siswa)
+        data = pdf.rapor_siswa_pdf(profil, self.jurnal, 'seluruh data')
+        self.periksa_pdf(data)
+        teks = self._teks_pdf(data)
+        self.assertIn('12403', teks)
+        self.assertNotIn('13069', teks)
+        self.assertNotIn('13500', teks)
+
+    def test_rapor_siswa_riwayat_panjang_ringkas_dua_halaman(self):
+        self.data_uji()
+        self.jurnal = analytics.load_jurnal()
+        self.siswa = analytics.load_siswa()
+        riwayat = analytics.riwayat_siswa(self.jurnal, '12403')
+        tambahan = pd.concat([riwayat.iloc[[0]]] * 40, ignore_index=True)
+        tambahan['id'] = range(1000, 1000 + len(tambahan))
+        riwayat = pd.concat([riwayat, tambahan], ignore_index=True)
+        profil = analytics.profil_siswa(riwayat, '12403', self.siswa)
+        data = pdf.rapor_siswa_pdf(profil, riwayat, 'seluruh data', batas_riwayat=12)
+        self.periksa_pdf(data)
+        halaman = len(POLA_HALAMAN.findall(data))
+        self.assertGreaterEqual(halaman, 1)
+        self.assertLessEqual(halaman, 2)
+        self.assertIn('entri lainnya', self._teks_pdf(data))
 
 
 class StreamlitPdfTestCase(TempDbTestCase):

@@ -9,7 +9,7 @@ import streamlit as st
 sys.path.append(str(Path(__file__).parent.parent))
 
 from core.db import get_conn, init_db, load_referensi_pasal
-from core.importer import FIELDS, PasteEguruParser, preview_records, save_import
+from core.importer import FIELDS, PasteEguruParser, csv_baris_error, preview_records, save_import
 from core.theme import header_halaman, inject_css, sidebar_brand
 
 st.set_page_config(page_title='Import CSV', layout='wide')
@@ -51,22 +51,7 @@ if records:
     st.dataframe(pd.DataFrame(preview), width='stretch')
     if invalid:
         st.error('Perbaiki semua error sebelum menyimpan. Tidak ada baris yang disimpan sebagian.')
-        baris_error = []
-        for nomor, row in enumerate(preview, start=1):
-            if row['errors']:
-                baris_error.append({
-                    'baris': nomor,
-                    'nis': row.get('nis', ''),
-                    'nama': row.get('nama', ''),
-                    'kelas': row.get('kelas', ''),
-                    'absen': row.get('absen', ''),
-                    'kode_pasal': row.get('kode_pasal', ''),
-                    'tanggal_kejadian': row.get('tanggal_kejadian', ''),
-                    'poin': row.get('poin', ''),
-                    'alasan': '; '.join(str(alasan) for alasan in row['errors']),
-                })
-        st.download_button('Unduh baris error (CSV)',
-                           pd.DataFrame(baris_error).to_csv(index=False).encode('utf-8-sig'),
+        st.download_button('Unduh baris error (CSV)', csv_baris_error(preview),
                            'baris_error_import.csv', 'text/csv', key='csv_error')
     confirmed = st.checkbox('Saya telah memeriksa preview dan menyetujui penyimpanan', key='import_confirmed', disabled=bool(invalid))
     if st.button('Simpan import', key='btn_save', disabled=bool(invalid) or not confirmed):

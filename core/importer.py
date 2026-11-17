@@ -345,6 +345,24 @@ def preview_records(records, conn):
     return preview
 
 
+def csv_baris_error(preview):
+    baris_error = []
+    for nomor, row in enumerate(preview, start=1):
+        if row['errors']:
+            baris_error.append({
+                'baris': nomor,
+                'nis': row.get('nis', ''),
+                'nama': row.get('nama', ''),
+                'kelas': row.get('kelas', ''),
+                'absen': row.get('absen', ''),
+                'kode_pasal': row.get('kode_pasal', ''),
+                'tanggal_kejadian': row.get('tanggal_kejadian', ''),
+                'poin': row.get('poin', ''),
+                'alasan': '; '.join(str(alasan) for alasan in row['errors']),
+            })
+    return pd.DataFrame(baris_error).to_csv(index=False).encode('utf-8-sig')
+
+
 def save_import(records, filename, confirmed=False, source='import_csv', user='operator'):
     if not confirmed:
         raise ValueError('Konfirmasi eksplisit diperlukan')
