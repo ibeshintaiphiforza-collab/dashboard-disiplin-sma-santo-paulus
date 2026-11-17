@@ -316,5 +316,79 @@ class AnalisisBaruTestCase(unittest.TestCase):
         self.assertEqual(analytics.siswa_penyumbang(kosong)['jumlah'], 0)
 
 
+class RingkasanMingguanTestCase(unittest.TestCase):
+    def _frame(self):
+        import pandas as pd
+        return pd.DataFrame([
+            {'nis': '1', 'nama_siswa': 'A', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -200,
+             'tanggal_kejadian': '2026-08-03'},
+            {'nis': '1', 'nama_siswa': 'A', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -200,
+             'tanggal_kejadian': '2026-08-04'},
+            {'nis': '1', 'nama_siswa': 'A', 'kelas': '10-1', 'kode_pasal': 'ME-03', 'poin': -200,
+             'tanggal_kejadian': '2026-08-05'},
+            {'nis': '2', 'nama_siswa': 'B', 'kelas': '11-1', 'kode_pasal': 'ME-03', 'poin': -50,
+             'tanggal_kejadian': '2026-08-06'},
+            {'nis': '2', 'nama_siswa': 'B', 'kelas': '11-1', 'kode_pasal': 'ME-03', 'poin': -50,
+             'tanggal_kejadian': '2026-08-10'},
+            {'nis': '2', 'nama_siswa': 'B', 'kelas': '11-1', 'kode_pasal': 'PA-01', 'poin': 200,
+             'tanggal_kejadian': '2026-08-11'},
+            {'nis': '3', 'nama_siswa': 'C', 'kelas': '12-1', 'kode_pasal': 'ME-04', 'poin': -600,
+             'tanggal_kejadian': '2026-07-20'},
+        ])
+
+    def test_perbandingan_minggu(self):
+        hasil = analytics.ringkasan_mingguan(self._frame(), '2026-08-10')
+        self.assertEqual(hasil['minggu_ini']['kejadian'], 1)
+        self.assertEqual(hasil['minggu_ini']['total_poin'], 50)
+        self.assertEqual(hasil['minggu_lalu']['kejadian'], 4)
+        self.assertEqual(hasil['minggu_lalu']['total_poin'], 650)
+        self.assertEqual(hasil['selisih']['kejadian'], -3)
+        self.assertEqual(hasil['selisih']['total_poin'], -600)
+        self.assertAlmostEqual(hasil['persen']['kejadian'], -75.0, places=5)
+        self.assertEqual(hasil['pasal_teratas'][0]['kode_pasal'], 'ME-03')
+        self.assertEqual(hasil['kelas_teratas'][0]['kelas'], '11-1')
+        self.assertEqual(hasil['murid_terbanyak'][0]['nis'], '2')
+
+    def test_murid_baru_melewati_ambang(self):
+        hasil = analytics.ringkasan_mingguan(self._frame(), '2026-08-10')
+        nis = [baris['nis'] for baris in hasil['murid_baru_melewati_ambang']]
+        self.assertEqual(nis, ['1'])
+
+    def test_naik_tingkat_sp_terdeteksi(self):
+        import pandas as pd
+        frame = pd.DataFrame([
+            {'nis': '9', 'nama_siswa': 'D', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -300,
+             'tanggal_kejadian': '2026-08-03'},
+            {'nis': '9', 'nama_siswa': 'D', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -100,
+             'tanggal_kejadian': '2026-08-10'},
+        ])
+        hasil = analytics.ringkasan_mingguan(frame, '2026-08-10')
+        baris = hasil['murid_baru_melewati_ambang']
+        self.assertEqual(len(baris), 1)
+        self.assertEqual(baris[0]['nis'], '9')
+        self.assertEqual(baris[0]['tingkat_lalu'], 'SP I (Skorsing 1 hari)')
+        self.assertEqual(baris[0]['tingkat_ini'], 'SP II (Skorsing 1 hari, max ujian 65%)')
+
+    def test_tetap_tingkat_sama_tidak_ikut(self):
+        import pandas as pd
+        frame = pd.DataFrame([
+            {'nis': '8', 'nama_siswa': 'E', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -300,
+             'tanggal_kejadian': '2026-08-03'},
+            {'nis': '8', 'nama_siswa': 'E', 'kelas': '10-1', 'kode_pasal': 'ME-02', 'poin': -50,
+             'tanggal_kejadian': '2026-08-10'},
+        ])
+        hasil = analytics.ringkasan_mingguan(frame, '2026-08-10')
+        self.assertEqual(hasil['murid_baru_melewati_ambang'], [])
+
+    def test_minggu_kosong_tanpa_error(self):
+        hasil = analytics.ringkasan_mingguan(self._frame(), '2026-12-07')
+        self.assertEqual(hasil['minggu_ini']['kejadian'], 0)
+        self.assertIsNone(hasil['persen']['kejadian'])
+        self.assertEqual(hasil['pasal_teratas'], [])
+        self.assertEqual(hasil['murid_baru_melewati_ambang'], [])
+        kosong = analytics.ringkasan_mingguan(None, '2026-08-10')
+        self.assertEqual(kosong['minggu_ini']['total_poin'], 0)
+
+
 if __name__ == '__main__':
     unittest.main()

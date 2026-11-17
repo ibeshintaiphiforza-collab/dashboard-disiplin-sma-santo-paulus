@@ -1,8 +1,10 @@
 from datetime import datetime
 
+
 import pandas as pd
 
 from core.db import get_conn, pisah_kelas_absen
+from core.thresholds import THRESHOLDS_SP
 
 
 def _waktu_sekarang():
@@ -637,6 +639,112 @@ def import_terakhir():
         return import_id, nama_file, jumlah
     finally:
         conn.close()
+
+
+def ringkasan_mingguan(jurnal, tanggal_awal_minggu):
+    awal = pd.Timestamp(tanggal_awal_minggu).normalize()
+    awal = awal - pd.Timedelta(days=awal.dayofweek)
+    akhir = awal + pd.Timedelta(days=6)
+    awal_lalu = awal - pd.Timedelta(days=7)
+    akhir_lalu = awal - pd.Timedelta(days=1)
+
+    hasil = {
+        'minggu_ini': {'kejadian': 0, 'total_poin': 0},
+        'minggu_lalu': {'kejadian': 0, 'total_poin': 0},
+        'selisih': {'kejadian': 0, 'total_poin': 0},
+        'persen': {'kejadian': None, 'total_poin': None},
+        'pasal_teratas': [],
+        'kelas_teratas': [],
+        'murid_terbanyak': [],
+        'murid_baru_melewati_ambang': [],
+    }
+    if jurnal is None or getattr(jurnal, 'empty', True):
+        return hasil
+    data = normalisasi_kelas(jurnal)
+    if 'poin' not in data.columns or 'tanggal_kejadian' not in data.columns:
+        return hasil
+    data = data[data['poin'] < 0].copy()
+    if data.empty:
+        return hasil
+    data['tanggal'] = pd.to_datetime(data['tanggal_kejadian'], errors='coerce')
+    data = data[data['tanggal'].notna()]
+    if data.empty:
+        return hasil
+    data['tanggal'] = data['tanggal'].dt.normalize()
+    data['nis'] = data['nis'].astype(str)
+    data['poin_mutlak'] = data['poin'].abs()
+
+    ini = data[(data['tanggal'] >= awal) & (data['tanggal'] <= akhir)]
+    lalu = data[(data['tanggal'] >= awal_lalu) & (data['tanggal'] <= akhir_lalu)]
+
+    hasil['minggu_ini'] = {'kejadian': int(len(ini)), 'total_poin': float(ini['poin_mutlak'].sum())}
+    hasil['minggu_lalu'] = {'kejadian': int(len(lalu)), 'total_poin': float(lalu['poin_mutlak'].sum())}
+    for kunci in ('kejadian', 'total_poin'):
+        beda = hasil['minggu_ini'][kunci] - hasil['minggu_lalu'][kunci]
+        hasil['selisih'][kunci] = beda
+        dasar = hasil['minggu_lalu'][kunci]
+        hasil['persen'][kunci] = None if not dasar else beda / dasar * 100
+
+    if not ini.empty:
+        pasal = ini.groupby('kode_pasal').agg(
+            jumlah_kejadian=('poin', 'size'), total_poin=('poin_mutlak', 'sum')).reset_index()
+        pasal = pasal.sort_values(['jumlah_kejadian', 'total_poin'], ascending=[False, False])
+        hasil['pasal_teratas'] = pasal.head(3).to_dict('records')
+
+        kelas = ini.groupby('kelas').agg(
+            jumlah_kejadian=('poin', 'size'), total_poin=('poin_mutlak', 'sum')).reset_index()
+        kelas = kelas.sort_values(['jumlah_kejadian', 'total_poin'], ascending=[False, False])
+        hasil['kelas_teratas'] = kelas.head(3).to_dict('records')
+
+        murid = ini.groupby('nis').agg(
+            nama=('nama_siswa', 'last'),
+            kelas=('kelas', 'last'),
+            jumlah_kejadian=('poin', 'size'),
+            total_poin=('poin_mutlak', 'sum'),
+        ).reset_index()
+        murid = murid.sort_values(['jumlah_kejadian', 'total_poin'], ascending=[False, False])
+        hasil['murid_terbanyak'] = murid.head(5).to_dict('records')
+
+    def _item(item):
+        if isinstance(item, dict):
+            return item.get('threshold', 0), item.get('label')
+        return getattr(item, 'threshold', 0), getattr(item, 'label', None)
+
+    ambang_min = min(_item(item)[0] for item in THRESHOLDS_SP)
+
+    def _tingkat(total):
+        level = None
+        for item in THRESHOLDS_SP:
+            ambang, label = _item(item)
+            if ambang < 0 and total >= abs(ambang):
+                level = label
+        return level
+
+    def _peringkat(label):
+        for i, item in enumerate(THRESHOLDS_SP):
+            if _item(item)[1] == label:
+                return i
+        return -1
+
+    if ambang_min < 0:
+        kumulatif = data.groupby('nis').agg(
+            nama=('nama_siswa', 'last'),
+            kelas=('kelas', 'last'),
+            sampai_ini=('poin_mutlak', 'sum'),
+        ).reset_index()
+        sampai_lalu = data[data['tanggal'] <= akhir_lalu].groupby('nis')['poin_mutlak'].sum()
+        kumulatif['sampai_lalu'] = kumulatif['nis'].map(sampai_lalu).fillna(0.0).astype(float)
+        kumulatif['sampai_ini'] = kumulatif['sampai_ini'].astype(float)
+        kumulatif['tingkat_lalu'] = kumulatif['sampai_lalu'].map(_tingkat)
+        kumulatif['tingkat_ini'] = kumulatif['sampai_ini'].map(_tingkat)
+        kumulatif['_peringkat_ini'] = kumulatif['tingkat_ini'].map(_peringkat)
+        kumulatif['_peringkat_lalu'] = kumulatif['tingkat_lalu'].map(_peringkat)
+        baru = kumulatif[(kumulatif['tingkat_ini'].notna()) & (kumulatif['_peringkat_ini'] > kumulatif['_peringkat_lalu'])]
+        baru = baru.sort_values(['_peringkat_ini', 'sampai_ini'], ascending=[False, False])
+        hasil['murid_baru_melewati_ambang'] = baru[
+            ['nis', 'nama', 'kelas', 'sampai_lalu', 'sampai_ini', 'tingkat_lalu', 'tingkat_ini']
+        ].to_dict('records')
+    return hasil
 
 
 def rollback_import_terakhir():
