@@ -350,7 +350,7 @@ class RingkasanMingguanTestCase(unittest.TestCase):
         self.assertEqual(hasil['murid_terbanyak'][0]['nis'], '2')
 
     def test_murid_baru_melewati_ambang(self):
-        hasil = analytics.ringkasan_mingguan(self._frame(), '2026-08-10')
+        hasil = analytics.ringkasan_mingguan(self._frame(), '2026-08-03')
         nis = [baris['nis'] for baris in hasil['murid_baru_melewati_ambang']]
         self.assertEqual(nis, ['1'])
 

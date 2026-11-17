@@ -727,7 +727,7 @@ def ringkasan_mingguan(jurnal, tanggal_awal_minggu):
         return -1
 
     if ambang_min < 0:
-        kumulatif = data.groupby('nis').agg(
+        kumulatif = data[data['tanggal'] <= akhir].groupby('nis').agg(
             nama=('nama_siswa', 'last'),
             kelas=('kelas', 'last'),
             sampai_ini=('poin_mutlak', 'sum'),
