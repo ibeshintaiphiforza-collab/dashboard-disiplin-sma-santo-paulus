@@ -98,6 +98,39 @@ class BackupTestCase(unittest.TestCase):
     def test_integritas_db_tidak_ada_file(self):
         self.assertFalse(backup_mod.integritas_db(self.tmp_path / 'tidakada.db'))
 
+    def test_restore_backup_korup_db_asli_tetap_utuh(self):
+        db_tujuan = self.restore_dir / 'tujuan.db'
+        self.restore_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(self.src_db, db_tujuan)
+        korup = self.tmp_path / 'korup.db'
+        korup.write_bytes(b'bukan database sqlite')
+        with self.assertRaises(RuntimeError):
+            backup_mod.restore_db(korup, db_path=db_tujuan, confirmed=True)
+        con = sqlite3.connect(str(db_tujuan))
+        try:
+            n = con.execute('SELECT COUNT(*) FROM jurnal').fetchone()[0]
+        finally:
+            con.close()
+        self.assertEqual(n, 2)
+        self.assertFalse((db_tujuan.parent / 'tujuan.db.restore-tmp').exists())
+
+    def test_restore_dari_folder_lain_dan_db_path_lain(self):
+        sumber_lain = self.tmp_path / 'lain' / 'sumber.db'
+        sumber_lain.parent.mkdir(parents=True, exist_ok=True)
+        self._buat_db_sumber(sumber_lain)
+        berkas, _ = backup_mod.backup_db(db_path=sumber_lain, backup_dir=self.backup_dir, keep=14)
+        db_tujuan = self.tmp_path / 'hasil' / 'target.db'
+        db_tujuan.parent.mkdir(parents=True, exist_ok=True)
+        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+        self.assertTrue(ok)
+        self.assertTrue(backup_mod.integritas_db(db_tujuan))
+        con = sqlite3.connect(str(db_tujuan))
+        try:
+            n = con.execute('SELECT COUNT(*) FROM jurnal').fetchone()[0]
+        finally:
+            con.close()
+        self.assertEqual(n, 2)
+
 
 if __name__ == '__main__':
     unittest.main()

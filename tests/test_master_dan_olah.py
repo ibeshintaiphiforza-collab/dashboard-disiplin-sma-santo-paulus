@@ -181,7 +181,7 @@ class AnalyticsTestCase(TempDbTestCase):
         self.assertEqual(anomali['poin_beda_default']['id'].tolist(), [3])
         self.assertEqual(anomali['nis_tidak_dikenal']['id'].tolist(), [4])
         self.assertEqual(sorted(anomali['duplikat_kandidat']['id']), [1, 2])
-        self.assertEqual(anomali['tanggal_mendahului_input']['id'].tolist(), [3])
+        self.assertEqual(anomali['tanggal_mendahului_input']['id'].tolist(), [1, 2])
 
     def test_nis_check_skipped_when_master_empty(self):
         kosong = self.siswa.iloc[0:0]
@@ -223,6 +223,22 @@ class AnalyticsTestCase(TempDbTestCase):
         terhapus = analytics.hapus_jurnal([1, 2], confirmed=True)
         self.assertEqual(terhapus, 2)
         self.assertEqual(self.count('jurnal'), 3)
+
+    def test_hapus_jurnal_tepat_dan_menulis_audit(self):
+        terhapus = analytics.hapus_jurnal([3], confirmed=True, user='tester')
+        self.assertEqual(terhapus, 1)
+        self.assertEqual(self.count('jurnal'), 4)
+        conn = db.get_conn()
+        try:
+            sisa = [r[0] for r in conn.execute('SELECT id FROM jurnal ORDER BY id')]
+            audit = conn.execute(
+                'SELECT nama_file, jumlah_baris, gagal, user FROM import_log '
+                "WHERE nama_file = 'hapus_jurnal:3' ORDER BY waktu DESC LIMIT 1"
+            ).fetchone()
+        finally:
+            conn.close()
+        self.assertEqual(sisa, [1, 2, 4, 5])
+        self.assertEqual(audit, ('hapus_jurnal:3', 1, 1, 'tester'))
 
 
 class ExportTestCase(unittest.TestCase):

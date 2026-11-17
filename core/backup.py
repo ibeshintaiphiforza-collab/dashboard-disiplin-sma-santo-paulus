@@ -5,6 +5,8 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 
+from core.db import DB_PATH
+
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent.parent / 'backups'
 DEFAULT_ROTATION_KEEP = 14
 POLA_BACKUP = ['disiplin-*.db', 'disiplin-prerestore-*.db']
@@ -69,7 +71,7 @@ def rotasi_backup(backup_dir=DEFAULT_BACKUP_DIR, keep=DEFAULT_ROTATION_KEEP):
     return dihapus
 
 
-def backup_db(db_path='data/disiplin.db', backup_dir=DEFAULT_BACKUP_DIR, keep=DEFAULT_ROTATION_KEEP):
+def backup_db(db_path=DB_PATH, backup_dir=DEFAULT_BACKUP_DIR, keep=DEFAULT_ROTATION_KEEP):
     db_path = Path(db_path)
     backup_dir = Path(backup_dir)
     if not db_path.exists():
@@ -93,7 +95,7 @@ def backup_db(db_path='data/disiplin.db', backup_dir=DEFAULT_BACKUP_DIR, keep=DE
     return keluar, dihapus
 
 
-def restore_db(backup_path, db_path='data/disiplin.db', confirmed=False, pre_backup_dir=DEFAULT_BACKUP_DIR):
+def restore_db(backup_path, db_path=DB_PATH, confirmed=False, pre_backup_dir=DEFAULT_BACKUP_DIR):
     backup_path = Path(backup_path)
     db_path = Path(db_path)
     if not backup_path.exists():
@@ -112,16 +114,12 @@ def restore_db(backup_path, db_path='data/disiplin.db', confirmed=False, pre_bac
             cadangan_prerestore = None
             raise RuntimeError('Cadangan pra-restore gagal integritas; restore dibatalkan.')
 
-    sumber = sqlite3.connect(str(backup_path))
-    tujuan = sqlite3.connect(str(db_path))
-    try:
-        sumber.backup(tujuan)
-    finally:
-        tujuan.close()
-        sumber.close()
-
-    if not integritas_db(db_path):
-        raise RuntimeError('Restore gagal pemeriksaan integritas setelah ditulis.')
+    sementara = db_path.with_name(db_path.name + '.restore-tmp')
+    shutil.copy2(str(backup_path), str(sementara))
+    if not integritas_db(sementara):
+        sementara.unlink(missing_ok=True)
+        raise RuntimeError('Restore gagal pemeriksaan integritas; DB asli tidak diubah.')
+    os.replace(str(sementara), str(db_path))
     return cadangan_prerestore, True
 
 
