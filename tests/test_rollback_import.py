@@ -44,7 +44,11 @@ class RollbackImportTestCase(unittest.TestCase):
         terhapus = analytics.rollback_import_terakhir()
         self.assertEqual(terhapus, 3)
         self.assertEqual(self.count('jurnal'), 2)
-        ids = {r[0] for r in db.get_conn().execute('SELECT id FROM jurnal')}
+        conn = db.get_conn()
+        try:
+            ids = {r[0] for r in conn.execute('SELECT id FROM jurnal')}
+        finally:
+            conn.close()
         self.assertEqual(ids, {1, 2})
         self.assertEqual(self.count('import_log', "di_rollback = 1"), 1)
 

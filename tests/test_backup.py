@@ -114,6 +114,19 @@ class BackupTestCase(unittest.TestCase):
         self.assertEqual(n, 2)
         self.assertFalse((db_tujuan.parent / 'tujuan.db.restore-tmp').exists())
 
+    def test_restore_gagal_saat_db_terkunci(self):
+        from unittest import mock
+        berkas, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
+        db_tujuan = self.restore_dir / 'tujuan.db'
+        self.restore_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(self.src_db, db_tujuan)
+        with mock.patch('core.backup.os.replace', side_effect=PermissionError('terkunci')):
+            with self.assertRaises(RuntimeError) as ctx:
+                backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+        self.assertIn('Database sedang dipakai', str(ctx.exception))
+        self.assertFalse((db_tujuan.parent / 'tujuan.db.restore-tmp').exists())
+        self.assertTrue(backup_mod.integritas_db(db_tujuan))
+
     def test_restore_dari_folder_lain_dan_db_path_lain(self):
         sumber_lain = self.tmp_path / 'lain' / 'sumber.db'
         sumber_lain.parent.mkdir(parents=True, exist_ok=True)

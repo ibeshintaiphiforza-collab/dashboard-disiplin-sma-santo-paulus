@@ -92,3 +92,10 @@ RINCian file yang diubah (Tahap 0–3):
 
 Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jaringan 0.0.0.0, auto-start boot, melengkapi impor historis, risolusi konflik poin 0 PB-16/PB-39.
 
+
+## Status sesi perbaikan review
+- Sesi perbaikan review selesai.
+- Restore kini atomik dan memberi pesan jelas bila database terkunci.
+- Rollback import tersedia (core/analytics.py: rollback_import_terakhir).
+- Keputusan poin 0 sah untuk PB-16/PB-39 ditetapkan.
+- Temuan unique index dan penolakan duplikat ditunda karena butuh keputusan.

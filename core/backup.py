@@ -119,7 +119,11 @@ def restore_db(backup_path, db_path=DB_PATH, confirmed=False, pre_backup_dir=DEF
     if not integritas_db(sementara):
         sementara.unlink(missing_ok=True)
         raise RuntimeError('Restore gagal pemeriksaan integritas; DB asli tidak diubah.')
-    os.replace(str(sementara), str(db_path))
+    try:
+        os.replace(str(sementara), str(db_path))
+    except (PermissionError, OSError):
+        sementara.unlink(missing_ok=True)
+        raise RuntimeError('Database sedang dipakai. Hentikan aplikasi (tutup start_server.bat) lalu ulangi restore.')
     return cadangan_prerestore, True
 
 
