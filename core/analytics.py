@@ -568,3 +568,49 @@ def hapus_jurnal(ids, confirmed=False, user='operator'):
             raise
     finally:
         conn.close()
+
+
+def import_terakhir():
+    conn = get_conn()
+    try:
+        baris = conn.execute(
+            "SELECT id, nama_file, berhasil FROM import_log "
+            "WHERE nama_file NOT LIKE 'hapus_jurnal:%' AND di_rollback = 0 "
+            "ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        if not baris:
+            return None
+        import_id, nama_file, berhasil = baris
+        jumlah = conn.execute(
+            'SELECT COUNT(*) FROM jurnal WHERE import_id = ?', (import_id,)
+        ).fetchone()[0]
+        return import_id, nama_file, jumlah
+    finally:
+        conn.close()
+
+
+def rollback_import_terakhir():
+    conn = get_conn()
+    conn.isolation_level = None
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        try:
+            baris = conn.execute(
+                "SELECT id FROM import_log "
+                "WHERE nama_file NOT LIKE 'hapus_jurnal:%' AND di_rollback = 0 "
+                "ORDER BY id DESC LIMIT 1"
+            ).fetchone()
+            if not baris:
+                conn.execute('ROLLBACK')
+                raise ValueError('Tidak ada import yang dapat di-rollback')
+            import_id = baris[0]
+            cursor = conn.execute('DELETE FROM jurnal WHERE import_id = ?', (import_id,))
+            terhapus = cursor.rowcount
+            conn.execute('UPDATE import_log SET di_rollback = 1 WHERE id = ?', (import_id,))
+            conn.execute('COMMIT')
+            return terhapus
+        except Exception:
+            conn.execute('ROLLBACK')
+            raise
+    finally:
+        conn.close()

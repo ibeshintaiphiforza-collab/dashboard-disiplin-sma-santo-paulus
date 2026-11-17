@@ -74,7 +74,20 @@ def init_db():
     """)
     
     conn.commit()
+    migrasi_rollback_import(conn)
     conn.close()
+
+
+def migrasi_rollback_import(conn):
+    pastikan_kolom_absen(conn, 'jurnal') if False else None
+    jurnal_kolom = {row[1] for row in conn.execute('PRAGMA table_info(jurnal)')}
+    if 'import_id' not in jurnal_kolom:
+        conn.execute('ALTER TABLE jurnal ADD COLUMN import_id INTEGER')
+        conn.execute('CREATE INDEX IF NOT EXISTS idx_jurnal_import_id ON jurnal(import_id)')
+    log_kolom = {row[1] for row in conn.execute('PRAGMA table_info(import_log)')}
+    if 'di_rollback' not in log_kolom:
+        conn.execute('ALTER TABLE import_log ADD COLUMN di_rollback INTEGER NOT NULL DEFAULT 0')
+    conn.commit()
 
 
 KELAS_GABUNGAN = re.compile(r'((?:10|11|12)-[A-Z0-9]+) (\d{2})')

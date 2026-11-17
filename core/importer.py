@@ -356,17 +356,22 @@ def save_import(records, filename, confirmed=False, source='import_csv', user='o
             preview = preview_records(records, conn)
             if not preview or any(row['errors'] for row in preview):
                 raise ValueError('Import dibatalkan: ada record tidak valid')
+            conn.execute(
+                'INSERT INTO import_log (waktu,nama_file,jumlah_baris,berhasil,gagal,duplikat,user) VALUES (?,?,?,?,?,?,?)',
+                (datetime.now().isoformat(timespec='seconds'), filename, len(records), 0, 0, 0, user)
+            )
+            import_id = conn.execute('SELECT last_insert_rowid()').fetchone()[0]
             saved = duplicates = 0
             for row in preview:
                 cursor = conn.execute(
-                    f"INSERT INTO jurnal (id,{','.join(FIELDS)},sumber) VALUES ({','.join(['?'] * (len(FIELDS) + 2))}) ON CONFLICT(id) DO NOTHING",
-                    [row['id_eguru']] + [row[field] for field in FIELDS] + [source]
+                    f"INSERT INTO jurnal (id,{','.join(FIELDS)},sumber,import_id) VALUES ({','.join(['?'] * (len(FIELDS) + 3))}) ON CONFLICT(id) DO NOTHING",
+                    [row['id_eguru']] + [row[field] for field in FIELDS] + [source, import_id]
                 )
                 saved += cursor.rowcount
                 duplicates += 1 - cursor.rowcount
             conn.execute(
-                'INSERT INTO import_log (waktu,nama_file,jumlah_baris,berhasil,gagal,duplikat,user) VALUES (?,?,?,?,?,?,?)',
-                (datetime.now().isoformat(timespec='seconds'), filename, len(records), saved, 0, duplicates, user)
+                'UPDATE import_log SET berhasil = ?, duplikat = ? WHERE id = ?',
+                (saved, duplicates, import_id)
             )
             conn.execute('COMMIT')
             return saved, duplicates

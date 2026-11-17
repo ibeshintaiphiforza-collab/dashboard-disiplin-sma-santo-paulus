@@ -7,8 +7,9 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from core.analytics import (deteksi_anomali, filter_jurnal, hapus_jurnal, load_jurnal, load_siswa,
-                            rekap_per_kelas, rekap_per_siswa, rekap_per_subkategori)
+from core.analytics import (deteksi_anomali, filter_jurnal, hapus_jurnal, import_terakhir, load_jurnal,
+                            load_siswa, rekap_per_kelas, rekap_per_siswa, rekap_per_subkategori,
+                            rollback_import_terakhir)
 from core.db import init_db, load_referensi_pasal
 from core.export import to_csv_bytes, to_excel_bytes
 from core.pdf import periode_label, rekap_kelas_pdf, rekap_sekolah_pdf
@@ -129,8 +130,26 @@ if st.button('Hapus entri terpilih', key='btn_hapus', disabled=not pilihan_id or
         st.error(f'Penghapusan dibatalkan: {exc}')
 
 st.divider()
-st.subheader('Cadangan Basis Data')
+st.subheader('Rollback Import Terakhir')
 from core import backup as backup_mod
+info_rollback = import_terakhir()
+if info_rollback:
+    import_id, nama_file, jumlah = info_rollback
+    st.write(f'Import terakhir: `{nama_file}` ({jumlah} baris jurnal).')
+    konfirmasi_rollback = st.checkbox('Saya memahami rollback menghapus baris jurnal dari import terakhir', key='rollback_conf')
+    if st.button('Rollback import terakhir', key='btn_rollback', disabled=not konfirmasi_rollback):
+        try:
+            backup_mod.backup_db()
+            terhapus = rollback_import_terakhir()
+            st.success(f'{terhapus} baris jurnal di-rollback.')
+            st.rerun()
+        except (ValueError, sqlite3.Error) as exc:
+            st.error(f'Rollback dibatalkan: {exc}')
+else:
+    st.info('Tidak ada import yang dapat di-rollback.')
+
+st.divider()
+st.subheader('Cadangan Basis Data')
 col_b1, col_b2 = st.columns([1, 2])
 with col_b1:
     if st.button('Backup Sekarang', key='btn_backup'):
