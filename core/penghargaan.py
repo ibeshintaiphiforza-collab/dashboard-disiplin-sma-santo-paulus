@@ -103,16 +103,18 @@ def daftar_kandidat(jurnal, pasal, periode_awal=None, periode_akhir=None, batas_
     baris = []
     for kelompok, subkategori in KELOMPOK.items():
         anggota = prestasi[prestasi['subkategori'] == subkategori]
-        if anggota.empty:
-            continue
         total = anggota.groupby('nis')['poin'].sum()
         if dukungan_ortu == ('akademik' if subkategori == 'prestasi_akademik' else 'humaniora'):
             total = total.add(dukungan, fill_value=0)
+        if total.empty:
+            continue
         for nis, nilai in total.items():
             tingkat = tingkat_dari_poin(float(nilai), subkategori)
             if tingkat is None:
                 continue
             murid = anggota[anggota['nis'] == nis]
+            if murid.empty:
+                murid = data[data['nis'] == nis]
             terakhir = murid.iloc[-1]
             jumlah_pelanggaran = float(total_pelanggaran.get(nis, 0))
             memenuhi = jumlah_pelanggaran <= float(batas_pelanggaran)
