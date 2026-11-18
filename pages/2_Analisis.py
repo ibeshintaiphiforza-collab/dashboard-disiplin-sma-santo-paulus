@@ -292,8 +292,26 @@ with st.expander('10. Kandidat Penghargaan', expanded=False):
         tampil['memenuhi_syarat'] = tampil['memenuhi_syarat'].map({True: 'Ya', False: 'Tidak'})
         tampil['piala'] = tampil['piala'].map({True: 'Ya', False: 'Tidak'})
 
+        def _rapikan_nama(nilai):
+            if not isinstance(nilai, str) or not nilai.strip():
+                return nilai
+            if nilai == nilai.lower() or nilai == nilai.upper():
+                return ' '.join(kata.capitalize() for kata in nilai.split(' '))
+            return nilai
+
+        tampil['nama'] = tampil['nama'].apply(_rapikan_nama)
+        for kunci in ('total_prestasi', 'total_pelanggaran'):
+            if kunci in tampil.columns:
+                tampil[kunci] = pd.to_numeric(tampil[kunci], errors='coerce').round(0).astype('Int64')
+        tampil = tampil.rename(columns={
+            'nis': 'NIS', 'nama': 'Nama', 'kelas': 'Kelas', 'kelompok': 'Kelompok',
+            'total_prestasi': 'Total Prestasi', 'tingkat': 'Tingkat', 'penghargaan': 'Penghargaan',
+            'total_pelanggaran': 'Total Pelanggaran', 'memenuhi_syarat': 'Memenuhi Syarat',
+            'piala': 'Piala',
+        })
+
         def _tandai(baris):
-            if baris['memenuhi_syarat'] == 'Tidak':
+            if baris['Memenuhi Syarat'] == 'Tidak':
                 return ['background-color: #fde2e1'] * len(baris)
             return [''] * len(baris)
 

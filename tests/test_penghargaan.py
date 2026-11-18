@@ -83,13 +83,13 @@ class DukunganOrangTuaTest(unittest.TestCase):
 
     def test_default_masuk_humaniora(self):
         data = jurnal([
-            prestasi('E1', 2400, 'prestasi_humaniora'),
+            prestasi('E1', 4300, 'prestasi_humaniora'),
             prestasi('E1', 200, 'dukungan_orang_tua'),
         ])
         hasil = daftar_kandidat(data, None)
         self.assertEqual(len(hasil), 1)
         self.assertEqual(hasil['kelompok'].iloc[0], 'Humaniora')
-        self.assertEqual(hasil['total_prestasi'].iloc[0], 2600)
+        self.assertEqual(hasil['total_prestasi'].iloc[0], 4500)
 
 
 if __name__ == '__main__':
