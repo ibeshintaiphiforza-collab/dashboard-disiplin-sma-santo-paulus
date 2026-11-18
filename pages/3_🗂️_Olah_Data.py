@@ -7,13 +7,12 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from core.analytics import (deteksi_anomali, filter_jurnal, hapus_jurnal, import_terakhir, load_jurnal,
-                            load_siswa, rekap_per_kelas, rekap_per_siswa, rekap_per_subkategori,
+from core.analytics import (deteksi_anomali, filter_jurnal, hapus_jurnal, import_terakhir,
+                            rekap_per_kelas, rekap_per_siswa, rekap_per_subkategori,
                             rollback_import_terakhir)
-from core.db import init_db, load_referensi_pasal
 from core.export import to_csv_bytes, to_excel_bytes
 from core.pdf import periode_label, rekap_kelas_pdf, rekap_sekolah_pdf
-from core.session import sidebar_filters
+from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
 from core.theme import header_halaman, inject_css, sidebar_brand
 
 st.set_page_config(page_title='Olah Data', layout='wide')
@@ -21,11 +20,10 @@ inject_css()
 sidebar_brand()
 header_halaman('Olah Data',
                'Tabel jurnal interaktif, deteksi anomali, rekap, ekspor, dan unduhan PDF.')
-init_db()
-load_referensi_pasal()
+ensure_init()
 
-jurnal = load_jurnal()
-siswa = load_siswa()
+jurnal = cached_jurnal()
+siswa = cached_siswa()
 
 if jurnal.empty:
     st.warning('Belum ada data jurnal. Silakan import data terlebih dahulu di halaman Import CSV.')
@@ -36,8 +34,9 @@ terfilter = sidebar_filters(jurnal, load=False)
 st.subheader('Filter dan Tabel Jurnal')
 pencarian = st.text_input('Cari nama murid atau judul', key='filter_cari')
 terfilter = filter_jurnal(terfilter, pencarian=pencarian)
-st.write(f'{len(terfilter)} dari {len(jurnal)} entri jurnal')
-st.dataframe(terfilter, width='stretch')
+tabel = terfilter.sort_values('tanggal_kejadian', ascending=False).head(200)
+st.write(f'{len(terfilter)} dari {len(jurnal)} entri jurnal; menampilkan {len(tabel)} terbaru')
+st.dataframe(tabel, width='stretch')
 
 st.divider()
 st.subheader('Deteksi Anomali')
@@ -65,7 +64,7 @@ st.subheader('Rekap')
 rekap_siswa = rekap_per_siswa(terfilter, siswa)
 rekap_kelas = rekap_per_kelas(terfilter)
 rekap_sub = rekap_per_subkategori(terfilter)
-tab_siswa, tab_kelas, tab_sub = st.tabs(['Per Siswa', 'Per Kelas', 'Per Subkategori'])
+tab_siswa, tab_kelas, tab_sub = st.tabs(['Per Murid', 'Per Kelas', 'Per Subkategori'])
 with tab_siswa:
     st.dataframe(rekap_siswa, width='stretch')
 with tab_kelas:

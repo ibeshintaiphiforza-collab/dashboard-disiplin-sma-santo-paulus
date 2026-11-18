@@ -105,10 +105,10 @@ def fig_eskalasi(df):
         fig.add_trace(go.Bar(
             x=label_tahap, y=nilai, name=NAMA_RANTAI[rantai], marker_color=warna,
             text=nilai, textposition='outside',
-            hovertemplate='%{x}<br>%{y} siswa<extra></extra>',
+            hovertemplate='%{x}<br>%{y} murid<extra></extra>',
         ))
     fig.update_layout(barmode='group')
-    return _siapkan(fig, 'x', label_tahap, 'Tahap', 'Jumlah siswa')
+    return _siapkan(fig, 'x', label_tahap, 'Tahap', 'Jumlah murid')
 
 
 def fig_early_warning(df):
@@ -230,14 +230,14 @@ def fig_tingkat(df):
         hovertemplate='Tingkat %{x}<br>%{y} poin minus<extra></extra>',
     ), secondary_y=False)
     fig.add_trace(go.Scatter(
-        x=data['tingkat'], y=data['jumlah_siswa'], name='Jumlah siswa', mode='lines+markers',
+        x=data['tingkat'], y=data['jumlah_siswa'], name='Jumlah murid', mode='lines+markers',
         line=dict(color=WARNA_SISWA), marker=dict(size=9),
-        hovertemplate='Tingkat %{x}<br>%{y} siswa<extra></extra>',
+        hovertemplate='Tingkat %{x}<br>%{y} murid<extra></extra>',
     ), secondary_y=True)
     fig.update_layout(**TATA_LETAK, barmode='group')
     _siapkan(fig, 'x', data['tingkat'].tolist(), 'Tingkat', '')
     fig.update_yaxes(title_text='Poin', secondary_y=False)
-    fig.update_yaxes(title_text='Jumlah siswa', secondary_y=True, rangemode='tozero')
+    fig.update_yaxes(title_text='Jumlah murid', secondary_y=True, rangemode='tozero')
     return fig
 
 

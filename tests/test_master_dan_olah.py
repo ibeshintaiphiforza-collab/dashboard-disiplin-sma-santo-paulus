@@ -278,7 +278,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
         self.AppTest = AppTest
 
     def test_master_page_paste_preview_and_save_smoke(self):
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '5_Master_Murid.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '5_👥_Master_Murid.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         app.text_area[0].set_value(PASTE_MASTER).run()
         app.button(key='btn_preview_master').click().run()
@@ -291,7 +291,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
         self.assertEqual(self.count('siswa'), 4)
 
     def test_olah_data_page_smoke_without_data(self):
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_Olah_Data.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_🗂️_Olah_Data.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         self.assertTrue(app.warning)
 
@@ -302,7 +302,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
             'nis': '12403', 'nama_siswa': 'ALESSANDRO', 'kelas': '12-T1 01', 'kode_pasal': 'ME-02',
             'poin': '', 'judul': 'terlambat', 'keterangan': '', 'petugas': 'Petugas A'
         }], 'csv', confirmed=True)
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_Olah_Data.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_🗂️_Olah_Data.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         self.assertTrue(app.dataframe)
         self.assertTrue(any('1 dari 1 entri jurnal' in str(m.value) for m in app.markdown))
@@ -320,7 +320,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
             'nis': '13069', 'nama_siswa': 'RUSSELL', 'kelas': '11-T1 34', 'kode_pasal': 'PA-01',
             'poin': '1800', 'judul': 'juara', 'keterangan': '', 'petugas': 'Petugas B'
         }], 'csv', confirmed=True)
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_Olah_Data.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '3_🗂️_Olah_Data.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         self.assertEqual(app.multiselect(key='filter_tingkat').options, ['10', '11', '12'])
         self.assertEqual(app.multiselect(key='filter_kategori').options, ['pelanggaran', 'prestasi'])

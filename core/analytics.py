@@ -4,7 +4,7 @@ from datetime import datetime
 import pandas as pd
 
 from core.db import get_conn, pisah_kelas_absen
-from core.thresholds import THRESHOLDS_SP
+from core.thresholds import THRESHOLDS_SP, tingkat_sp
 
 
 def _waktu_sekarang():
@@ -546,7 +546,7 @@ def distribusi_hari_pelanggaran(df):
 
 
 def konsentrasi_pelanggaran(df):
-    kolom = ['nis', 'nama', 'kelas', 'total_poin', 'jumlah_entri', 'persen', 'persen_kumulatif']
+    kolom = ['nis', 'nama', 'kelas', 'total_poin_mutlak', 'jumlah_entri', 'persen', 'persen_kumulatif']
     if df is None or df.empty or 'poin' not in df.columns:
         return pd.DataFrame(columns=kolom)
     data = normalisasi_kelas(df)
@@ -558,12 +558,12 @@ def konsentrasi_pelanggaran(df):
     hasil = data.groupby('nis').agg(
         nama=('nama_siswa', 'last'),
         kelas=('kelas', 'last'),
-        total_poin=('poin_mutlak', 'sum'),
+        total_poin_mutlak=('poin_mutlak', 'sum'),
         jumlah_entri=('poin', 'size'),
     ).reset_index()
-    hasil = hasil.sort_values(['total_poin', 'jumlah_entri'], ascending=[False, False]).reset_index(drop=True)
-    total = hasil['total_poin'].sum()
-    hasil['persen'] = hasil['total_poin'] / total * 100 if total else 0.0
+    hasil = hasil.sort_values(['total_poin_mutlak', 'jumlah_entri'], ascending=[False, False]).reset_index(drop=True)
+    total = hasil['total_poin_mutlak'].sum()
+    hasil['persen'] = hasil['total_poin_mutlak'] / total * 100 if total else 0.0
     hasil['persen_kumulatif'] = hasil['persen'].cumsum()
     return hasil[kolom]
 
@@ -713,15 +713,7 @@ def ringkasan_mingguan(jurnal, tanggal_awal_minggu):
     ambang_min = min(_item(item)[0] for item in THRESHOLDS_SP)
 
     def _tingkat(total):
-        level = None
-        peringkat = -1
-        for item in THRESHOLDS_SP:
-            ambang, label = _item(item)
-            if ambang < 0 and total >= abs(ambang):
-                if _peringkat(label) > peringkat:
-                    peringkat = _peringkat(label)
-                    level = label
-        return level
+        return tingkat_sp(total)
 
     def _peringkat(label):
         for i, item in enumerate(THRESHOLDS_SP):

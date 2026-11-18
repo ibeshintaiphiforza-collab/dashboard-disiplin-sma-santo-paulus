@@ -2,7 +2,7 @@ CATATAN LANJUTAN — Dashboard Disiplin & Prestasi SMA Katolik Santo Paulus Jemb
 Tanggal: 2026-11-16 (malam)
 
 STATUS SAAT INI
-- Semua 111 test lulus (python -m unittest discover -s tests), compile bersih (python -X utf8 -m compileall app.py core pages tests).
+- Semua 111 test lulus (python -m unittest discover -s tests), compile bersih (python -X utf8 -m compileall Beranda.py core pages tests).
 - Aplikasi berjalan di http://127.0.0.1:8501 (streamlit, headless).
 - Database: data/disiplin.db — siswa 652, jurnal 400 (ID 40839–41270, periode 20 Juli – 13 Agustus 2026), pasal 178 lengkap dengan poin baku & mode_poin.
 - Backup database: data/disiplin.db.bak-sebelum-pisah-absen (belum dihapus, aman).
@@ -68,7 +68,7 @@ PEKERJAAN YANG BELUM SELESAI / OPSIONAL (besok atau nanti)
 
 PERINTAH PENTING
 - Jalankan test: python -m unittest discover -s tests
-- Jalankan aplikasi: python -m streamlit run app.py --server.port 8501 --server.address 127.0.0.1 --server.headless true
+- Jalankan aplikasi: python -m streamlit run Beranda.py --server.port 8501 --server.address 127.0.0.1 --server.headless true
   (sudah persistent; cukup buka http://127.0.0.1:8501, tekan Ctrl+F5 jika perlu muat ulang)
 - Jangan hapus assets/logo-*.png dan data/disiplin.db.
 
@@ -77,7 +77,7 @@ Jika ingin melanjutkan, saran prioritas: (1) logo di PDF, (2) melengkapi impor d
 ---
 UPDATE 2026-11-17 (Tahap 0–3 selesai, menunggu konfirmasi untuk Tahap 4)
 - TAHAP 0: Server nyala dan stabil di http://127.0.0.1:8501. Bukti: _stcore/health = "ok", root = 200 OK. start_server.bat dibuat di root (tidak ada virtualenv). Proses Streamlit dipertahankan agar jendela tidak tertutup.
-- TAHAP 1: .gitignore dibuat (data/*.db, data/*.bak*, *.db-journal, __pycache__/, *.pyc, .venv/, venv/, backups/, .kilo/, .streamlit/secrets.toml). Variabel residivis di pages/2_Analisis.py diganti nama jadi pelanggaran_berulang (kosmetik, tanpa perubahan perilaku). Tes: 120 lulus, compile bersih.
+- TAHAP 1: .gitignore dibuat (data/*.db, data/*.bak*, *.db-journal, __pycache__/, *.pyc, .venv/, venv/, backups/, .kilo/, .streamlit/secrets.toml). Variabel residivis di pages/2_🔎_Analisis.py diganti nama jadi pelanggaran_berulang (kosmetik, tanpa perubahan perilaku). Tes: 120 lulus, compile bersih.
 - TAHAP 2: core/backup.py dibuat (sqlite3 backup API, stempel waktu, rotasi 14 terbaru, restore dengan konfirmasi + cadangan pra-restore, PRAGMA integrity_check setelah backup/restore). Bagian "Cadangan Basis Data" ditambahkan ke halaman Olah Data (tombol Backup Sekarang, daftar cadangan, Restore 2 langkah). backup_db.bat dibuat untuk Task Scheduler. tests/test_backup.py ditambahkan (7 tes). Tes total: 120 lulus, compile bersih. Cadangan manual sebelum perubahan: backups/disiplin-SEBELUM-TAHAP2-<ts>.db.
 - TAHAP 3: Uji import batch besar pada salinan DB (data/disiplin.db tidak disentuh, sudah dihapus setelah uji): 301 entri valid -> tersimpan 300, duplikat id_eguru 1 dilewati, waktu 0,05 detik. Preview 6 entri cacat -> semua ditolak (tanggal kosong, tanggal <2000, kode tak dikenal, nama/judul kosong). Temuan: poin 0 sah (keputusan pemilik) untuk PB-16/PB-39. NIS tidak dikenal tidak ditolak importer (ditangkap deteksi_anomali nanti).
 
@@ -86,8 +86,8 @@ RINCian file yang diubah (Tahap 0–3):
 - start_server.bat (baru)
 - backup_db.bat (baru)
 - core/backup.py (baru)
-- pages/3_Olah_Data.py (tambah bagian Cadangan Basis Data)
-- pages/2_Analisis.py (rename variabel residivis -> pelanggaran_berulang)
+- pages/3_🗂️_Olah_Data.py (tambah bagian Cadangan Basis Data)
+- pages/2_🔎_Analisis.py (rename variabel residivis -> pelanggaran_berulang)
 - tests/test_backup.py (baru)
 
 Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jaringan 0.0.0.0, auto-start boot, melengkapi impor historis.

@@ -154,7 +154,7 @@ class FigureTestCase(TempDbTestCase):
         fig = analytics_charts.fig_tingkat(self.jurnal)
         plus = self.trace(fig, 'Poin plus')
         minus = self.trace(fig, 'Poin minus')
-        siswa = self.trace(fig, 'Jumlah siswa')
+        siswa = self.trace(fig, 'Jumlah murid')
         self.assertEqual(list(plus.x), ['10', '11', '12'])
         self.assertEqual(list(plus.y), [100, 1800, 0])
         self.assertEqual(list(minus.y), [650, 415, 180])
@@ -229,7 +229,7 @@ class StreamlitSmokeTestCase(TempDbTestCase):
         self.AppTest = AppTest
 
     def jalankan(self):
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '2_Analisis.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '2_🔎_Analisis.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         return app
 

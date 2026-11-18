@@ -8,8 +8,9 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from core.db import get_conn, init_db, load_referensi_pasal
+from core.db import get_conn
 from core.importer import FIELDS, PasteEguruParser, csv_baris_error, preview_records, save_import
+from core.session import ensure_init
 from core.theme import header_halaman, inject_css, sidebar_brand
 
 st.set_page_config(page_title='Import CSV', layout='wide')
@@ -17,8 +18,7 @@ inject_css()
 sidebar_brand()
 header_halaman('Import CSV',
                'Impor jalur paste e-Guru atau unggah CSV dengan pratinjau validasi sebelum disimpan.')
-init_db()
-load_referensi_pasal()
+ensure_init()
 mode = st.radio('Sumber data', ['Paste eGuru', 'Upload CSV'])
 paste = st.text_area('Paste tabel eGuru', height=240) if mode == 'Paste eGuru' else ''
 upload = st.file_uploader('Upload CSV', type=['csv']) if mode == 'Upload CSV' else None

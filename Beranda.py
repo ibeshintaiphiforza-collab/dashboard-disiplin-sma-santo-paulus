@@ -5,8 +5,7 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).parent))
 
-from core.analytics import load_jurnal, load_siswa
-from core.db import init_db, load_referensi_pasal
+from core.session import cached_jurnal, cached_siswa, ensure_init
 from core.theme import (header_halaman, hero_beranda, inject_css, kartu_kpi, kartu_tautan,
                         sidebar_brand)
 
@@ -16,15 +15,14 @@ st.set_page_config(
     layout="wide"
 )
 
-init_db()
-load_referensi_pasal()
+ensure_init()
 
 inject_css()
 sidebar_brand()
 hero_beranda()
 
-jurnal = load_jurnal()
-siswa = load_siswa()
+jurnal = cached_jurnal()
+siswa = cached_siswa()
 
 jumlah_entri = 0 if jurnal is None or jurnal.empty else int(len(jurnal))
 jumlah_siswa = 0
@@ -47,20 +45,39 @@ kartu_kpi(kolom3, 'Kelas Terdata', f'{jumlah_kelas:,}', 'Kelas aktif pada data s
 st.write('')
 
 kolom_dashboard, kolom_analisis, kolom_import = st.columns(3)
-kartu_tautan(kolom_dashboard, 'Dashboard', 'Visualisasi ringkasan komposisi entri, tren bulanan, '
-             'poin per kelas, heatmap, dan leaderboard murid.', '📊')
 with kolom_dashboard:
-    st.page_link('pages/1_📊_Dashboard.py', label='Buka Dashboard', width='stretch')
+    with st.container(key="kartu_dashboard"):
+        kartu_tautan(st, 'Dashboard', 'Visualisasi ringkasan komposisi entri, tren bulanan, '
+                     'poin per kelas, heatmap, dan leaderboard murid.', '📊')
+        st.page_link('pages/1_📊_Dashboard.py', label='Buka Dashboard', width='stretch')
 
-kartu_tautan(kolom_analisis, 'Analisis', 'Pelanggaran Berulang, rantai eskalasi, early warning, statistik petugas, '
-             'dan tren waktu lintas kelas.', '🔎')
 with kolom_analisis:
-    st.page_link('pages/2_Analisis.py', label='Buka Analisis', width='stretch')
+    with st.container(key="kartu_analisis"):
+        kartu_tautan(st, 'Analisis', 'Pelanggaran Berulang, rantai eskalasi, early warning, statistik petugas, '
+                     'dan tren waktu lintas kelas.', '🔎')
+        st.page_link('pages/2_🔎_Analisis.py', label='Buka Analisis', width='stretch')
 
-kartu_tautan(kolom_import, 'Import CSV', 'Impor jalur paste e-Guru atau unggah CSV, lengkap dengan '
-             'pratinjau validasi sebelum disimpan.', '📥')
 with kolom_import:
-    st.page_link('pages/4_Import_CSV.py', label='Buka Import CSV', width='stretch')
+    with st.container(key="kartu_import"):
+        kartu_tautan(st, 'Import CSV', 'Impor jalur paste e-Guru atau unggah CSV, lengkap dengan '
+                     'pratinjau validasi sebelum disimpan.', '📥')
+        st.page_link('pages/4_📥_Import_CSV.py', label='Buka Import CSV', width='stretch')
+
+st.write('')
+
+kolom_olah, kolom_master, kolom_profil = st.columns(3)
+with kolom_olah:
+    with st.container(key="kartu_olah"):
+        kartu_tautan(st, 'Olah Data', 'Tabel interaktif, ekspor CSV/Excel, dan unduhan PDF.', '🗂️')
+        st.page_link('pages/3_🗂️_Olah_Data.py', label='Buka Olah Data', width='stretch')
+with kolom_master:
+    with st.container(key="kartu_master"):
+        kartu_tautan(st, 'Master Murid', 'Kelola data induk murid (NIS, nama, kelas).', '👥')
+        st.page_link('pages/5_👥_Master_Murid.py', label='Buka Master Murid', width='stretch')
+with kolom_profil:
+    with st.container(key="kartu_profil"):
+        kartu_tautan(st, 'Profil Murid', 'Rapor poin per murid beserta riwayat entrinya.', '👤')
+        st.page_link('pages/6_👤_Profil_Murid.py', label='Buka Profil Murid', width='stretch')
 
 st.write('')
 header_halaman('Mulai dari mana?', 'Alur singkat penyiapan data sampai pembacaan laporan.')

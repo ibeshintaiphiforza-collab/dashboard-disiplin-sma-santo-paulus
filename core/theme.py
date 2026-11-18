@@ -385,12 +385,16 @@ div[data-testid="stNotification"] {{
   background: linear-gradient(90deg, rgba(201, 162, 39, 0), var(--emas), rgba(201, 162, 39, 0));
 }}
 
-.kartu-tautan {{
+[class^="st-key-kartu_"] {{
   background: var(--latar-panel);
   border: 1px solid var(--garis);
   border-radius: 14px;
   padding: 20px 20px 14px 20px;
   height: 100%;
+}}
+
+.kartu-tautan {{
+  margin-bottom: 0;
 }}
 .kartu-tautan .ikon {{
   font-size: 1.35rem;
@@ -406,6 +410,17 @@ div[data-testid="stNotification"] {{
   font-size: 0.86rem;
   line-height: 1.45;
   min-height: 3.6rem;
+}}
+
+[class^="st-key-kartu_"] [data-testid="stPageLink"] a {{
+  border: 1px solid rgba(201, 162, 39, 0.55);
+  border-radius: 10px;
+  color: var(--emas-terang);
+  text-align: center;
+  margin-top: 0.5rem;
+}}
+[class^="st-key-kartu_"] [data-testid="stPageLink"] a:hover {{
+  background: rgba(201, 162, 39, 0.14);
 }}
 </style>
 """
@@ -475,7 +490,7 @@ def hero_beranda():
         f'<div class="logo">{logo}</div>'
         f'<div class="eyebrow">{EYEBROW}</div>'
         f'<div class="judul">Dashboard Disiplin &amp; Prestasi</div>'
-        f'<div class="subjudul">Pemantauan kedisiplinan dan capaian siswa dalam satu tampilan yang tenang, '
+        f'<div class="subjudul">Pemantauan kedisiplinan dan capaian murid dalam satu tampilan yang tenang, '
         f'rapi, dan siap dipakai tim disiplin sekolah.</div>'
         f'{badge}'
         f'<div class="garis-emas"></div>'

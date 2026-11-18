@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT))
 
 from core import analytics, db
 from core.importer import parse_master_siswa, save_master_siswa
+from core.thresholds import status_peringatan, tingkat_sp
 
 PASTE_MASTER = (
     '12403\tALESSANDRO WILLIAM HARDIANTO\t12-T1\t01\n'
@@ -254,24 +255,24 @@ class StreamlitSmokeTestCase(TempDbTestCase):
 
     def test_profil_siswa_page_smoke_dengan_data(self):
         self.seed()
-        app = self.jalankan('6_Profil_Murid.py')
+        app = self.jalankan('6_👤_Profil_Murid.py')
         self.assertTrue(app.selectbox)
         self.assertTrue(app.metric)
         self.assertTrue(app.dataframe)
 
     def test_profil_siswa_page_smoke_basis_data_kosong(self):
-        app = self.jalankan('6_Profil_Murid.py')
+        app = self.jalankan('6_👤_Profil_Murid.py')
         self.assertTrue(app.warning)
 
     def test_analisis_page_smoke_dengan_data(self):
         self.seed()
-        app = self.jalankan('2_Analisis.py')
+        app = self.jalankan('2_🔎_Analisis.py')
         self.assertTrue(app.dataframe)
         self.assertTrue(app.info)
         self.assertGreaterEqual(len(app.get('plotly_chart')), 1)
 
     def test_analisis_page_smoke_basis_data_kosong(self):
-        app = self.jalankan('2_Analisis.py')
+        app = self.jalankan('2_🔎_Analisis.py')
         self.assertFalse(app.exception)
         self.assertFalse(app.dataframe)
 
@@ -291,7 +292,7 @@ class AnalisisBaruTestCase(unittest.TestCase):
         self.assertEqual(len(hasil), 3)
         self.assertAlmostEqual(float(hasil['persen_kumulatif'].iloc[-1]), 100.0, places=5)
         self.assertEqual(hasil['nis'].tolist(), ['1', '2', '3'])
-        self.assertEqual(float(hasil['total_poin'].iloc[0]), 80.0)
+        self.assertEqual(float(hasil['total_poin_mutlak'].iloc[0]), 80.0)
         lima_puluh = analytics.siswa_penyumbang(self._frame(), 50)
         delapan_puluh = analytics.siswa_penyumbang(self._frame(), 80)
         self.assertEqual(lima_puluh['jumlah'], 1)
@@ -379,6 +380,14 @@ class RingkasanMingguanTestCase(unittest.TestCase):
         ])
         hasil = analytics.ringkasan_mingguan(frame, '2026-08-10')
         self.assertEqual(hasil['murid_baru_melewati_ambang'], [])
+
+    def test_tingkat_sp_konsisten_antar_jalur(self):
+        for total in (-299, -300, -400, -599, -600):
+            mutlak = abs(total)
+            if mutlak < 300:
+                self.assertIsNone(tingkat_sp(mutlak))
+            else:
+                self.assertEqual(tingkat_sp(mutlak), status_peringatan(total)['label'])
 
     def test_minggu_kosong_tanpa_error(self):
         hasil = analytics.ringkasan_mingguan(self._frame(), '2026-12-07')

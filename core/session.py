@@ -3,7 +3,8 @@ from datetime import date, datetime
 import pandas as pd
 import streamlit as st
 
-from core.analytics import filter_jurnal, load_jurnal, tingkat_dari_kelas
+from core import db
+from core.analytics import filter_jurnal, load_jurnal, load_siswa, tingkat_dari_kelas
 
 FILTER_KEYS = [
     'filter_tanggal_mulai',
@@ -45,6 +46,41 @@ def _nilai_unik(df, kolom):
 
 def _rapikan(nilai, tersedia):
     return [item for item in (nilai or []) if item in tersedia]
+
+
+def _mtime_db():
+    try:
+        return db.DB_PATH.stat().st_mtime_ns
+    except OSError:
+        return None
+
+
+@st.cache_data(show_spinner=False)
+def _jurnal_tercache(db_path, mtime):
+    return load_jurnal()
+
+
+@st.cache_data(show_spinner=False)
+def _siswa_tercache(db_path, mtime):
+    return load_siswa()
+
+
+def cached_jurnal():
+    return _jurnal_tercache(str(db.DB_PATH), _mtime_db())
+
+
+def cached_siswa():
+    return _siswa_tercache(str(db.DB_PATH), _mtime_db())
+
+
+@st.cache_resource(show_spinner=False)
+def _init_tercache(db_path):
+    db.init_db()
+    db.load_referensi_pasal()
+
+
+def ensure_init():
+    _init_tercache(str(db.DB_PATH))
 
 
 def get_filter_defaults(df):

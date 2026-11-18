@@ -149,7 +149,7 @@ agar tidak mencampuri leaderboard prestasi siswa (dapat di-toggle).
 
 ```
 DASHBOARD DISIPLIN DAN PRESTASI/
-├── app.py                      # Entry point Streamlit (halaman Beranda/Dashboard)
+├── Beranda.py                  # Entry point Streamlit (halaman Beranda/Dashboard)
 ├── pages/
 │   ├── 1_📊_Dashboard.py       # Dashboard utama
 │   ├── 2_🔎_Analisis.py        # Analisis mendalam
@@ -334,7 +334,7 @@ openpyxl         # ekspor Excel
 chardet          # deteksi encoding CSV
 ```
 
-Python ≥ 3.10. Jalankan dengan: `streamlit run app.py`
+Python ≥ 3.10. Jalankan dengan: `streamlit run Beranda.py`
 
 ---
 

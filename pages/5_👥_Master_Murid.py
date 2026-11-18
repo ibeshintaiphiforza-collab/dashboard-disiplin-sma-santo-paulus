@@ -8,8 +8,9 @@ import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from core.db import get_conn, init_db, load_referensi_pasal
+from core.db import get_conn
 from core.importer import MASTER_FIELDS, parse_master_csv, parse_master_siswa, preview_master, save_master_siswa
+from core.session import ensure_init
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
 st.set_page_config(page_title='Master Murid', layout='wide')
@@ -17,8 +18,7 @@ inject_css()
 sidebar_brand()
 header_halaman('Master Murid',
                'Kelola daftar induk murid melalui paste tabel atau unggah CSV.')
-init_db()
-load_referensi_pasal()
+ensure_init()
 
 conn = get_conn()
 try:

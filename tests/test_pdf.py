@@ -266,14 +266,14 @@ class StreamlitPdfTestCase(TempDbTestCase):
 
     def test_profil_siswa_menyediakan_unduhan_pdf(self):
         self.seed()
-        app = self.jalankan('6_Profil_Murid.py')
+        app = self.jalankan('6_👤_Profil_Murid.py')
         kunci = [tombol.key for tombol in app.download_button]
         self.assertIn('pdf_rapor', kunci)
         self.assertIn('csv_rapor', kunci)
 
     def test_olah_data_menyediakan_unduhan_pdf(self):
         self.seed()
-        app = self.jalankan('3_Olah_Data.py')
+        app = self.jalankan('3_🗂️_Olah_Data.py')
         kunci = [tombol.key for tombol in app.download_button]
         self.assertIn('pdf_rekap_kelas', kunci)
         self.assertIn('pdf_rekap_sekolah', kunci)

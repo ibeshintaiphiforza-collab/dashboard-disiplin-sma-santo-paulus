@@ -11,3 +11,9 @@ def status_peringatan(total_poin_minus):
         if total_poin_minus <= THRESHOLDS_SP[i]['threshold']:
             return THRESHOLDS_SP[i]
     return THRESHOLDS_SP[0]
+
+
+def tingkat_sp(total_mutlak):
+    if total_mutlak is None or total_mutlak < 300:
+        return None
+    return status_peringatan(-total_mutlak)['label']

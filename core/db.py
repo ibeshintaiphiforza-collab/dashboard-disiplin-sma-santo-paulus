@@ -79,7 +79,6 @@ def init_db():
 
 
 def migrasi_rollback_import(conn):
-    pastikan_kolom_absen(conn, 'jurnal') if False else None
     jurnal_kolom = {row[1] for row in conn.execute('PRAGMA table_info(jurnal)')}
     if 'import_id' not in jurnal_kolom:
         conn.execute('ALTER TABLE jurnal ADD COLUMN import_id INTEGER')

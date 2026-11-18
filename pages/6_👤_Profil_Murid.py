@@ -6,11 +6,10 @@ import streamlit as st
 sys.path.append(str(Path(__file__).parent.parent))
 
 from core.analytics import (daftar_pilihan_siswa, entri_per_subkategori_siswa, kumulatif_netto_siswa,
-                            load_jurnal, load_siswa, profil_siswa, riwayat_siswa)
-from core.db import init_db, load_referensi_pasal
+                            profil_siswa, riwayat_siswa)
 from core.export import to_csv_bytes, to_excel_bytes
 from core.pdf import periode_label, rapor_siswa_pdf
-from core.session import sidebar_filters
+from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
 st.set_page_config(page_title='Profil Murid', layout='wide')
@@ -18,11 +17,10 @@ inject_css()
 sidebar_brand()
 header_halaman('Profil Murid',
                'Rapor poin per murid: prestasi, pelanggaran, netto, dan riwayat entri.')
-init_db()
-load_referensi_pasal()
+ensure_init()
 
-jurnal = load_jurnal()
-siswa = load_siswa()
+jurnal = cached_jurnal()
+siswa = cached_siswa()
 jurnal_filter = sidebar_filters(jurnal, load=False)
 abaikan_filter = st.toggle('abaikan filter (tampilkan seluruh riwayat)', key='profil_abaikan_filter')
 jurnal_aktif = jurnal if abaikan_filter else jurnal_filter

@@ -10,13 +10,13 @@ sys.path.append(str(Path(__file__).parent.parent))
 from core import analytics_charts as charts
 from core.analytics import (analisis_per_pasal, analisis_per_tingkat, distribusi_hari_pelanggaran,
                             distribusi_kategori_petugas, eskalasi_tahapan, konsentrasi_pelanggaran,
-                            load_jurnal, load_siswa, peta_panas_pasal_kelas, peringkat_kelas,
+                            peta_panas_pasal_kelas, peringkat_kelas,
                             pelanggaran_berulang, ringkasan_mingguan, siswa_berisiko, siswa_penyumbang,
                             statistik_petugas, top_pelanggar_per_pasal, tren_bulanan)
-from core.db import init_db, load_referensi_pasal
+from core.db import load_referensi_pasal
 from core.penghargaan import daftar_kandidat
 from core.export import to_csv_bytes, to_excel_bytes
-from core.session import sidebar_filters
+from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 from core.thresholds import THRESHOLDS_SP, status_peringatan
 
@@ -25,12 +25,11 @@ inject_css()
 sidebar_brand()
 header_halaman('Analisis',
                'Pola pelanggaran berulang, peringatan dini, statistik per pasal, kelas, dan petugas.')
-init_db()
-load_referensi_pasal()
+ensure_init()
 
-jurnal = sidebar_filters()
-jurnal_penuh = load_jurnal()
-siswa = load_siswa()
+jurnal_penuh = cached_jurnal()
+jurnal = sidebar_filters(jurnal_penuh, load=False)
+siswa = cached_siswa()
 
 if jurnal.empty:
     st.info('Belum ada data jurnal yang sesuai filter. Ubah filter di sidebar atau import data terlebih dahulu.')
@@ -103,7 +102,7 @@ with st.expander('2. Early Warning (Murid Berisiko)', expanded=False):
         berisiko = berisiko.drop(columns=['status_sp'], errors='ignore')
     
     st.caption('Murid diurutkan berdasarkan akumulasi poin pelanggaran.')
-    tabel_dengan_ekspor(berisiko, 'siswa_berisiko', 'Belum ada data poin murid.')
+    tabel_dengan_ekspor(berisiko, 'murid_berisiko', 'Belum ada data poin murid.')
     tampilkan_gambar(charts.fig_early_warning(jurnal), 'Belum ada poin minus murid untuk digambarkan.')
 
 with st.expander('3. Analisis per Pasal', expanded=False):
@@ -154,19 +153,21 @@ with st.expander('7. Konsentrasi Pelanggaran (Pareto)', expanded=False):
         atas = konsentrasi.head(30).copy()
         atas['label'] = atas['nama'].astype(str)
         gambar = go.Figure()
-        gambar.add_trace(go.Bar(x=atas['label'], y=atas['total_poin'], name='Total poin',
+        gambar.add_trace(go.Bar(x=atas['label'], y=atas['total_poin_mutlak'], name='Total poin',
                                 marker_color=charts.WARNA_MINUS))
         gambar.add_trace(go.Scatter(x=atas['label'], y=atas['persen_kumulatif'], name='Kumulatif (%)',
                                     yaxis='y2', mode='lines+markers'))
         gambar.update_layout(yaxis2=dict(overlaying='y', side='right', range=[0, 105],
                                          title='Persen kumulatif'))
         st.plotly_chart(gambar, width='stretch')
-        tabel = konsentrasi.head(15)[['nama', 'kelas', 'total_poin', 'jumlah_entri', 'persen_kumulatif']].copy()
+        tabel = konsentrasi.head(15)[['nama', 'kelas', 'total_poin_mutlak', 'jumlah_entri', 'persen_kumulatif']].copy()
+        tabel = tabel.rename(columns={'total_poin_mutlak': 'Total Poin (mutlak)'})
         tabel['persen_kumulatif'] = tabel['persen_kumulatif'].round(1)
         tabel_dengan_ekspor(tabel, 'konsentrasi_pelanggaran', 'Belum ada pelanggaran untuk dihitung.')
 
 with st.expander('8. Peta Panas Pasal x Kelas', expanded=False):
     st.caption('Pasal yang sering muncul terkonsentrasi pada kelas tertentu.')
+    st.caption('Menampilkan 15 pasal teratas.')
     dasar = st.radio('Hitung berdasarkan', ['jumlah_kejadian', 'total_poin'], horizontal=True,
                      key='peta_panas_dasar')
     if len(jurnal) < 30:

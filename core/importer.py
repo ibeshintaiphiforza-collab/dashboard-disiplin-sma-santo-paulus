@@ -244,6 +244,7 @@ class ImportValidator:
 
     def normalize_record(self, record, existing_ids=None, existing_keys=None, seen_keys=None):
         result = {field: text_value(record.get(field)) for field in FIELDS}
+        result['kode_pasal'] = result['kode_pasal'].strip().upper()
         errors, warnings = [], []
         ident = record.get('id_eguru', record.get('id'))
         try:
@@ -306,8 +307,7 @@ class ImportValidator:
                 poin = result['poin']
                 if poin * int(ref['arah_tanda']) < 0:
                     errors.append('Tanda poin tidak sesuai pasal')
-                if ref['mode_poin'] == 'manual' and poin == 0:
-                    pass
+                # Mode manual: poin 0 sah (PB-16/PB-39)
                 if ref['mode_poin'] == 'fixed' and poin != int(ref['poin_default']):
                     warnings.append('Poin berbeda dari poin baku')
             except ValueError:

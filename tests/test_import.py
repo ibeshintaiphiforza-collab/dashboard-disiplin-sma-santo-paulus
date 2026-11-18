@@ -244,6 +244,22 @@ class ImportTestCase(unittest.TestCase):
             conn.close()
         self.assertEqual(row, ('01234', '2026-07-20', -50, None))
 
+    def test_kode_pasal_dinormalisasi_case_dan_spasi(self):
+        conn = db.get_conn()
+        try:
+            save_import([{
+                'id': '91002', 'timestamp_input': '', 'tanggal_kejadian': '2026-07-20',
+                'nis': '12613', 'nama_siswa': 'tes', 'kelas': '10-1 01', 'kode_pasal': 'pb-54 ',
+                'poin': '', 'judul': 'j', 'keterangan': '', 'petugas': ''
+            }], 'csv', confirmed=True)
+            row = conn.execute(
+                "SELECT j.kode_pasal, p.kode FROM jurnal j "
+                "LEFT JOIN pasal p ON j.kode_pasal = p.kode WHERE j.id = 91002"
+            ).fetchone()
+        finally:
+            conn.close()
+        self.assertEqual(row, ('PB-54', 'PB-54'))
+
     def test_invalid_inputs_produce_errors_not_crashes(self):
         validator = ImportValidator(self.reference())
         base = {'id': '1', 'tanggal_kejadian': '2026-07-20', 'nis': '12613', 'nama_siswa': 'a',
@@ -422,7 +438,7 @@ class StreamlitSmokeTestCase(unittest.TestCase):
         db.load_referensi_pasal()
 
     def test_import_page_preview_and_save_smoke(self):
-        app = self.AppTest.from_file(str(ROOT / 'pages' / '4_Import_CSV.py'), default_timeout=60).run()
+        app = self.AppTest.from_file(str(ROOT / 'pages' / '4_📥_Import_CSV.py'), default_timeout=60).run()
         self.assertFalse(app.exception)
         app.text_area[0].set_value(FIXTURE.read_text(encoding='utf-8')).run()
         app.button(key='btn_preview').click().run()
