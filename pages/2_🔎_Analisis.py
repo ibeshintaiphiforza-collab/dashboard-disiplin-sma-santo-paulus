@@ -21,7 +21,7 @@ from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filte
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 from core.thresholds import THRESHOLDS_SP, status_peringatan
 
-st.set_page_config(page_title='Analisis', layout='wide')
+st.set_page_config(page_title='Analisis', layout='wide', initial_sidebar_state='expanded')
 inject_css()
 sidebar_brand()
 header_halaman('Analisis',

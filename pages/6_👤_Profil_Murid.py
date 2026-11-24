@@ -14,7 +14,7 @@ from core.pdf import periode_label, rapor_siswa_pdf
 from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
-st.set_page_config(page_title='Profil Murid', layout='wide')
+st.set_page_config(page_title='Profil Murid', layout='wide', initial_sidebar_state='expanded')
 inject_css()
 sidebar_brand()
 header_halaman('Profil Murid',

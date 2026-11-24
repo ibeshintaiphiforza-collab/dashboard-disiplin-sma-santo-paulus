@@ -13,7 +13,7 @@ from core.importer import MASTER_FIELDS, parse_master_csv, parse_master_siswa, p
 from core.session import ensure_init
 from core.theme import header_halaman, inject_css, kartu_kpi, sidebar_brand
 
-st.set_page_config(page_title='Master Murid', layout='wide')
+st.set_page_config(page_title='Master Murid', layout='wide', initial_sidebar_state='expanded')
 inject_css()
 sidebar_brand()
 header_halaman('Master Murid',

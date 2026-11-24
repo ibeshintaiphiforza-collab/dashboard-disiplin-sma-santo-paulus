@@ -73,11 +73,21 @@ _CSS = f"""
   --netral: {NETRAL};
 }}
 
-header[data-testid="stHeader"],
-div[data-testid="stToolbar"],
 div[data-testid="stDecoration"],
+div[data-testid="stMainMenu"],
+div[data-testid="stAppDeployButton"],
+div[data-testid="stStatusWidget"],
 #MainMenu, footer {{
   display: none !important;
+}}
+
+header[data-testid="stHeader"] {{
+  background: transparent !important;
+}}
+header[data-testid="stHeader"] [data-testid="stExpandSidebarButton"] {{
+  display: flex !important;
+  pointer-events: auto !important;
+  color: var(--emas-terang) !important;
 }}
 
 .stApp {{
@@ -87,7 +97,7 @@ div[data-testid="stDecoration"],
 }}
 
 .block-container {{
-  padding-top: 1.6rem !important;
+  padding-top: 4rem !important;
   padding-bottom: 3rem !important;
   max-width: 1280px;
 }}

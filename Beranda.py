@@ -12,7 +12,8 @@ from core.theme import (header_halaman, hero_beranda, inject_css, kartu_kpi, kar
 st.set_page_config(
     page_title="Dashboard Disiplin & Prestasi",
     page_icon="📊",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 ensure_init()

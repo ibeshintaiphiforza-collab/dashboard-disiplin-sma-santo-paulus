@@ -13,7 +13,7 @@ from core.importer import FIELDS, PasteEguruParser, csv_baris_error, preview_rec
 from core.session import ensure_init
 from core.theme import header_halaman, inject_css, sidebar_brand
 
-st.set_page_config(page_title='Import CSV', layout='wide')
+st.set_page_config(page_title='Import CSV', layout='wide', initial_sidebar_state='expanded')
 inject_css()
 sidebar_brand()
 header_halaman('Import CSV',

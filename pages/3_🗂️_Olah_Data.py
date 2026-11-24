@@ -15,7 +15,7 @@ from core.pdf import periode_label, rekap_kelas_pdf, rekap_sekolah_pdf
 from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
 from core.theme import header_halaman, inject_css, sidebar_brand
 
-st.set_page_config(page_title='Olah Data', layout='wide')
+st.set_page_config(page_title='Olah Data', layout='wide', initial_sidebar_state='expanded')
 inject_css()
 sidebar_brand()
 header_halaman('Olah Data',
