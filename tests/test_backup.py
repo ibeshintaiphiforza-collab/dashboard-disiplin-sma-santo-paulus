@@ -65,7 +65,8 @@ class BackupTestCase(unittest.TestCase):
         berkas, _, _ = backup_mod.backup_db(db_path=self.src_db, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.restore_dir / 'tujuan.db'
         self.restore_dir.mkdir(parents=True, exist_ok=True)
-        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True,
+                                        pre_backup_dir=self.backup_dir)
         self.assertTrue(ok)
         self.assertTrue(db_tujuan.exists())
         self.assertTrue(backup_mod.integritas_db(db_tujuan))
@@ -83,7 +84,8 @@ class BackupTestCase(unittest.TestCase):
         self.restore_dir.mkdir(parents=True, exist_ok=True)
         # salin sumber sebagai db saat ini
         shutil.copy2(self.src_db, db_tujuan)
-        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True,
+                                        pre_backup_dir=self.backup_dir)
         self.assertTrue(ok)
         self.assertIsNotNone(pre)
         self.assertTrue(pre.exists())
@@ -104,7 +106,8 @@ class BackupTestCase(unittest.TestCase):
         korup = self.tmp_path / 'korup.db'
         korup.write_bytes(b'bukan database sqlite')
         with self.assertRaises(RuntimeError):
-            backup_mod.restore_db(korup, db_path=db_tujuan, confirmed=True)
+            backup_mod.restore_db(korup, db_path=db_tujuan, confirmed=True,
+                                  pre_backup_dir=self.backup_dir)
         con = sqlite3.connect(str(db_tujuan))
         try:
             n = con.execute('SELECT COUNT(*) FROM jurnal').fetchone()[0]
@@ -121,7 +124,8 @@ class BackupTestCase(unittest.TestCase):
         shutil.copy2(self.src_db, db_tujuan)
         with mock.patch('core.backup.os.replace', side_effect=PermissionError('terkunci')):
             with self.assertRaises(RuntimeError) as ctx:
-                backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+                backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True,
+                                      pre_backup_dir=self.backup_dir)
         self.assertIn('Database sedang dipakai', str(ctx.exception))
         self.assertFalse((db_tujuan.parent / 'tujuan.db.restore-tmp').exists())
         self.assertTrue(backup_mod.integritas_db(db_tujuan))
@@ -133,7 +137,8 @@ class BackupTestCase(unittest.TestCase):
         berkas, _, _ = backup_mod.backup_db(db_path=sumber_lain, backup_dir=self.backup_dir, keep=14)
         db_tujuan = self.tmp_path / 'hasil' / 'target.db'
         db_tujuan.parent.mkdir(parents=True, exist_ok=True)
-        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True)
+        pre, ok = backup_mod.restore_db(berkas, db_path=db_tujuan, confirmed=True,
+                                        pre_backup_dir=self.backup_dir)
         self.assertTrue(ok)
         self.assertTrue(backup_mod.integritas_db(db_tujuan))
         con = sqlite3.connect(str(db_tujuan))
