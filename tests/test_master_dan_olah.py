@@ -200,27 +200,54 @@ class AnalyticsTestCase(TempDbTestCase):
         rekap = analytics.rekap_per_siswa(self.jurnal, siswa=self.siswa)
         self.assertIn('13500', rekap['nis'].tolist())
         baris = rekap[rekap['nis'] == '12403'].iloc[0]
-        self.assertEqual((baris['poin_plus'], baris['poin_minus'], baris['netto'], baris['jumlah_entri']),
-                         (0, -100, -100, 2))
+        self.assertEqual((baris['poin_plus'], baris['poin_minus'], baris['jumlah_entri']),
+                         (0, -100, 2))
         self.assertEqual(baris['nama'], 'ALESSANDRO WILLIAM HARDIANTO')
-        self.assertEqual(rekap[rekap['nis'] == '13500'].iloc[0]['netto'], 50)
+        self.assertEqual(rekap[rekap['nis'] == '13500'].iloc[0]['poin_plus'], 50)
         kelas = analytics.rekap_per_kelas(self.jurnal)
-        self.assertEqual(kelas[kelas['kelas'] == '12-T1'].iloc[0]['netto'], -100)
+        self.assertEqual(kelas[kelas['kelas'] == '12-T1'].iloc[0]['poin_minus'], -100)
         self.assertEqual(kelas[kelas['kelas'] == '10-5'].iloc[0]['jumlah_entri'], 2)
         self.assertEqual(sorted(kelas['kelas']), ['10-5', '11-T1', '12-T1'])
         self.assertEqual(baris['kelas'], '12-T1')
         self.assertEqual(baris['absen'], '01')
         sub = analytics.rekap_per_subkategori(self.jurnal).set_index('subkategori')
         self.assertEqual(sub.loc['dukungan_orang_tua', 'jumlah_entri'], 1)
-        self.assertEqual(sub.loc['dukungan_orang_tua', 'netto'], 50)
-        self.assertEqual(sub.loc['prestasi_akademik', 'netto'], 1800)
+        self.assertEqual(sub.loc['dukungan_orang_tua', 'poin_plus'], 50)
+        self.assertEqual(sub.loc['prestasi_akademik', 'poin_plus'], 1800)
+
+    def test_poin_bertipe_teks_tidak_error(self):
+        jurnal = pd.DataFrame([{
+            'nis': '1', 'kelas': '10-5', 'tanggal_kejadian': '2026-07-20',
+            'subkategori': 'pelanggaran', 'kategori': 'pelanggaran', 'poin': '-12',
+        }])
+        self.assertEqual(analytics.rekap_per_kelas(jurnal).iloc[0]['poin_minus'], -12)
+        self.assertEqual(analytics.tren_bulanan(jurnal).iloc[0]['pelanggaran'], 1)
+        self.assertEqual(analytics.kumulatif_poin_siswa(jurnal, '1').iloc[0]['kumulatif_pelanggaran'], -12)
+
+    def test_fungsi_tanpa_kolom_poin_mengembalikan_kosong(self):
+        jurnal = pd.DataFrame([{
+            'nis': '1', 'kelas': '10-5', 'tanggal_kejadian': '2026-07-20',
+            'subkategori': 'pelanggaran', 'kategori': 'pelanggaran',
+        }])
+        self.assertTrue(analytics.rekap_per_subkategori(jurnal).empty)
+        self.assertIn('poin_plus', analytics.rekap_per_subkategori(jurnal).columns)
+        self.assertTrue(analytics.tren_bulanan(jurnal).empty)
+        self.assertIn('kumulatif_pelanggaran', analytics.tren_bulanan(jurnal).columns)
+        self.assertTrue(analytics.analisis_per_tingkat(jurnal).empty)
 
     def test_rekap_on_empty_frame_returns_empty_columns(self):
         kosong = self.jurnal.iloc[0:0]
         self.assertTrue(analytics.rekap_per_siswa(kosong).empty)
         self.assertTrue(analytics.rekap_per_kelas(kosong).empty)
         self.assertTrue(analytics.rekap_per_subkategori(kosong).empty)
-        self.assertIn('netto', analytics.rekap_per_siswa(kosong).columns)
+        self.assertNotIn('netto', analytics.rekap_per_siswa(kosong).columns)
+
+    def test_output_tanpa_kolom_netto(self):
+        self.assertNotIn('netto', analytics.rekap_per_siswa(self.jurnal).columns)
+        self.assertNotIn('netto', analytics.rekap_per_kelas(self.jurnal).columns)
+        self.assertNotIn('netto', analytics.rekap_per_subkategori(self.jurnal).columns)
+        self.assertNotIn('netto', analytics.peringkat_kelas(self.jurnal).columns)
+        self.assertNotIn('netto', analytics.profil_siswa(self.jurnal, '12403', siswa=self.siswa))
 
     def test_delete_requires_confirmation_and_counts(self):
         with self.assertRaises(ValueError):
@@ -251,20 +278,22 @@ class AnalyticsTestCase(TempDbTestCase):
 
 class ExportTestCase(unittest.TestCase):
     def setUp(self):
-        self.df = pd.DataFrame({'nis': ['12403', '13069'], 'netto': [-100, 50]})
+        self.df = pd.DataFrame({'nis': ['12403', '13069'], 'poin_plus': [0, 50], 'poin_minus': [-100, 0]})
 
     def test_csv_bytes_non_empty_and_readable(self):
         data = to_csv_bytes(self.df)
         self.assertTrue(data)
         kembali = pd.read_csv(io.BytesIO(data), dtype={'nis': str})
-        self.assertEqual(kembali['netto'].tolist(), [-100, 50])
+        self.assertEqual(kembali['poin_plus'].tolist(), [0, 50])
+        self.assertEqual(kembali['poin_minus'].tolist(), [-100, 0])
 
     def test_excel_bytes_non_empty_and_readable(self):
         data = to_excel_bytes(self.df, 'rekap_siswa')
         self.assertTrue(data)
         kembali = pd.read_excel(io.BytesIO(data), dtype={'nis': str})
         self.assertEqual(kembali['nis'].tolist(), ['12403', '13069'])
-        self.assertEqual(kembali['netto'].tolist(), [-100, 50])
+        self.assertEqual(kembali['poin_plus'].tolist(), [0, 50])
+        self.assertEqual(kembali['poin_minus'].tolist(), [-100, 0])
 
     def test_excel_handles_empty_frame_and_long_sheet_name(self):
         data = to_excel_bytes(pd.DataFrame(columns=['a']), 'nama_sheet_yang_sangat_panjang_sekali_melebihi_batas')

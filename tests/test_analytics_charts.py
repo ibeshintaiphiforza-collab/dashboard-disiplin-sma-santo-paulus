@@ -161,7 +161,7 @@ class FigureTestCase(TempDbTestCase):
         self.assertEqual(list(siswa.y), [1, 2, 1])
 
     def test_kelas_poin_plus_dan_minus(self):
-        fig = analytics_charts.fig_kelas(self.jurnal)
+        fig = analytics_charts.fig_kelas(self.jurnal, analytics.load_siswa())
         plus = self.trace(fig, 'Poin plus')
         minus = self.trace(fig, 'Poin minus')
         self.assertEqual(set(plus.y), {'10-5', '11-K3', '11-T1', '12-T1'})
@@ -176,16 +176,18 @@ class FigureTestCase(TempDbTestCase):
         self.assertIn('xaxis2', fig.layout)
         self.assertGreaterEqual(len(fig.data), 3)
 
-    def test_tren_bulanan_dan_kumulatif_netto(self):
+    def test_tren_bulanan_dan_kumulatif_poin(self):
         fig = analytics_charts.fig_tren(self.jurnal)
         pelanggaran = self.trace(fig, 'Pelanggaran')
         prestasi = self.trace(fig, 'Prestasi')
-        kumulatif = self.trace(fig, 'Netto kumulatif')
+        kum_pelanggaran = self.trace(fig, 'Kumulatif pelanggaran')
+        kum_prestasi = self.trace(fig, 'Kumulatif prestasi')
         self.assertEqual(list(pelanggaran.x), ['Jul 2026', 'Agu 2026'])
         self.assertEqual(fig.layout.xaxis.type, 'category')
         self.assertEqual(list(pelanggaran.y), [3, 7])
         self.assertEqual(list(prestasi.y), [1, 1])
-        self.assertEqual(list(kumulatif.y), [1650, 655])
+        self.assertEqual(list(kum_pelanggaran.y), [-150, -1245])
+        self.assertEqual(list(kum_prestasi.y), [1800, 1900])
 
     def test_hari_pelanggaran_dan_prestasi(self):
         fig = analytics_charts.fig_hari(self.jurnal)

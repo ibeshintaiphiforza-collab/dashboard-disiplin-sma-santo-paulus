@@ -79,7 +79,6 @@ ringkasan = {
     'jumlah_kelas': int(terfilter['kelas'].nunique()) if not terfilter.empty else 0,
     'poin_prestasi': int(terfilter['poin'].clip(lower=0).sum()) if not terfilter.empty else 0,
     'poin_pelanggaran': int(terfilter['poin'].clip(upper=0).sum()) if not terfilter.empty else 0,
-    'netto': int(terfilter['poin'].sum()) if not terfilter.empty else 0,
 }
 periode = periode_label(terfilter)
 daftar_kelas = []

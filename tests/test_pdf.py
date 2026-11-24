@@ -70,7 +70,6 @@ class PdfTestCase(TempDbTestCase):
             'jumlah_kelas': int(self.jurnal['kelas'].nunique()),
             'poin_prestasi': int(self.jurnal['poin'].clip(lower=0).sum()),
             'poin_pelanggaran': int(self.jurnal['poin'].clip(upper=0).sum()),
-            'netto': int(self.jurnal['poin'].sum()),
         }
 
     def periksa_pdf(self, data, minimal=2000):
@@ -112,6 +111,55 @@ class PdfTestCase(TempDbTestCase):
         self.assertIn(b'Legenda Ambang Surat Peringatan', data)
         self.assertIn(b'Jumlah murid', data)
 
+    def test_kandidat_penghargaan_menghasilkan_pdf_valid(self):
+        dari = pd.DataFrame([
+            {'nis': '12403', 'nama': 'Alessandro William Hardianto', 'kelas': '12-T1',
+             'kelompok': 'Humaniora', 'total_prestasi': 3500, 'tingkat': 'III',
+             'penghargaan': 'Sertifikat Prestasi + Medali Perunggu'},
+            {'nis': '13069', 'nama': 'Russell Nicklaus', 'kelas': '11-T1',
+             'kelompok': 'Akademis/Olahraga/Seni', 'total_prestasi': 2000, 'tingkat': 'II',
+             'penghargaan': 'Sertifikat Prestasi + Medali Perak'},
+        ])
+        parameter = {
+            'periode': 'Semua data', 'batas_pelanggaran': 150,
+            'dukungan_orang_tua': 'Tambah ke Humaniora', 'jumlah_kandidat': 2,
+            'tanggal_cetak': '18-11-2026',
+        }
+        data = pdf.buat_pdf_kandidat_penghargaan(dari, parameter)
+        self.periksa_pdf(data)
+        self.assertIn(b'Kandidat Penghargaan', data)
+        self.assertIn(b'Daftar kandidat, bukan keputusan.', data)
+
+    def test_kandidat_penghargaan_mencetak_isi_baris_mentah(self):
+        data = pdf.buat_pdf_kandidat_penghargaan(pd.DataFrame([{
+            'nis': '99901', 'nama': 'Rani Raw Data', 'kelas': '10-5',
+            'kelompok': 'Akademis', 'total_prestasi': 1234, 'tingkat': 'I',
+            'penghargaan': 'Sertifikat Raw', 'total_pelanggaran': -25,
+            'memenuhi_syarat': True,
+        }]), {'periode': 'Semua data', 'jumlah_kandidat': 1})
+        self.assertIn(b'99901', data)
+        self.assertIn(b'Rani Raw Data', data)
+        self.assertIn(b'1234', data)
+
+    def test_kandidat_penghargaan_memuat_kolom_verifikasi(self):
+        data = pdf.buat_pdf_kandidat_penghargaan(pd.DataFrame([
+            {'NIS': '99902', 'Nama': 'Murid Ya', 'Kelas': '10-5',
+             'Kelompok': 'Akademis', 'Total Prestasi': 500, 'Tingkat': 'I',
+             'Penghargaan': 'Sertifikat', 'Total Pelanggaran': -10,
+             'Memenuhi Syarat': True},
+            {'NIS': '99903', 'Nama': 'Murid Tidak', 'Kelas': '11-T1',
+             'Kelompok': 'Humaniora', 'Total Prestasi': 250, 'Tingkat': 'II',
+             'Penghargaan': 'Piagam', 'Total Pelanggaran': -200,
+             'Memenuhi Syarat': False},
+        ]), {'periode': 'Semua data', 'jumlah_kandidat': 2})
+        for teks in (b'Total', b'Pelanggaran', b'Memenuhi', b'Syarat', b'Ya', b'Tidak'):
+            self.assertIn(teks, data)
+
+    def test_angka_menangani_nilai_tak_hingga(self):
+        for nilai in (float('inf'), float('-inf'), float('nan')):
+            with self.subTest(nilai=nilai):
+                self.assertEqual(pdf._angka(nilai), '-')
+
 
 class PdfKosongTestCase(TempDbTestCase):
     def setUp(self):
@@ -142,6 +190,13 @@ class PdfKosongTestCase(TempDbTestCase):
 
     def test_rekap_sekolah_kosong_menghasilkan_pdf_berisi_tanda_kosong(self):
         self.periksa_pdf(pdf.rekap_sekolah_pdf(self.rekap_kelas, 'seluruh data', {}))
+
+    def test_kandidat_penghargaan_kosong_tidak_error(self):
+        parameter = {'periode': 'Semua data', 'jumlah_kandidat': 0}
+        data = pdf.buat_pdf_kandidat_penghargaan(pd.DataFrame(), parameter)
+        self.assertIsInstance(data, bytes)
+        self.assertTrue(data.startswith(b'%PDF'))
+        self.assertIn(b'%%EOF', data)
 
     def test_helper_baris_kosong(self):
         self.assertEqual(pdf.KOSONG, 'Tidak ada data')

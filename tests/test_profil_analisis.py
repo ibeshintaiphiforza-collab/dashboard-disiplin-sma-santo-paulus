@@ -3,6 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import pandas as pd
+
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -69,7 +71,7 @@ class ProfilSiswaTestCase(TempDbTestCase):
         profil = analytics.profil_siswa(self.jurnal, '13069', siswa=self.siswa)
         self.assertEqual(profil['poin_prestasi'], 1950)
         self.assertEqual(profil['poin_pelanggaran'], 0)
-        self.assertEqual(profil['netto'], 1950)
+        self.assertEqual(profil['poin_prestasi'], 1950)
         self.assertEqual(profil['jumlah_entri'], 3)
         self.assertEqual(profil['poin_orang_tua'], 50)
         self.assertEqual(profil['jumlah_entri_orang_tua'], 1)
@@ -79,7 +81,7 @@ class ProfilSiswaTestCase(TempDbTestCase):
 
     def test_profil_dengan_dukungan_orang_tua(self):
         profil = analytics.profil_siswa(self.jurnal, '13069', siswa=self.siswa)
-        self.assertEqual(profil['netto'], 1950)
+        self.assertEqual(profil['poin_prestasi'], 1950)
         self.assertEqual(profil['jumlah_entri'], 3)
 
     def test_pilihan_siswa_dengan_filter_aktif_tidak_kosong(self):
@@ -98,7 +100,7 @@ class ProfilSiswaTestCase(TempDbTestCase):
         self.assertEqual(profil['kelas'], '12-T1')
         self.assertEqual(profil['absen'], '01')
         self.assertEqual(profil['sumber_identitas'], 'jurnal')
-        self.assertEqual(profil['netto'], -180)
+        self.assertEqual(profil['poin_pelanggaran'], -180)
 
     def test_riwayat_urut_turun_dan_berisi_deskripsi(self):
         riwayat = analytics.riwayat_siswa(self.jurnal, '12403')
@@ -109,16 +111,18 @@ class ProfilSiswaTestCase(TempDbTestCase):
         self.assertEqual(set(riwayat['kelas']), {'12-T1'})
         self.assertEqual(set(riwayat['absen']), {'01'})
 
-    def test_kumulatif_netto_dan_entri_per_subkategori(self):
-        kumulatif = analytics.kumulatif_netto_siswa(self.jurnal, '12403')
-        self.assertEqual(kumulatif['netto_kumulatif'].tolist(), [-50, -100, -150, -180])
+    def test_kumulatif_poin_dan_entri_per_subkategori(self):
+        kumulatif = analytics.kumulatif_poin_siswa(self.jurnal, '12403')
+        self.assertEqual(kumulatif['kumulatif_pelanggaran'].tolist(), [-50, -100, -150, -180])
+        self.assertEqual(kumulatif['kumulatif_prestasi'].tolist(), [0, 0, 0, 0])
         sub = analytics.entri_per_subkategori_siswa(self.jurnal, '13069').set_index('subkategori')
         self.assertEqual(sub.loc['prestasi_akademik', 'jumlah_entri'], 1)
         self.assertEqual(sub.loc['dukungan_orang_tua', 'total_poin'], 50)
 
     def test_profil_untuk_nis_tidak_dikenal_nol(self):
         profil = analytics.profil_siswa(self.jurnal, '00000', siswa=self.siswa)
-        self.assertEqual((profil['netto'], profil['jumlah_entri']), (0, 0))
+        self.assertEqual((profil['poin_prestasi'], profil['poin_pelanggaran'],
+                          profil['jumlah_entri']), (0, 0, 0))
         self.assertTrue(analytics.riwayat_siswa(self.jurnal, '00000').empty)
 
 
@@ -172,14 +176,44 @@ class AnalisisTestCase(TempDbTestCase):
         self.assertEqual(analytics.tingkat_dari_kelas(['12-T1 01', '10-5 07', 'XII A', None, '12-K2', '11-T1']).tolist(),
                          ['12', '10', 'lainnya', 'lainnya', '12', '11'])
         tingkat = analytics.analisis_per_tingkat(self.jurnal).set_index('tingkat')
-        self.assertEqual(tingkat.loc['12', 'netto'], -180)
-        self.assertEqual(tingkat.loc['11', 'netto'], 1950)
-        self.assertEqual(tingkat.loc['10', 'netto'], 115)
+        self.assertEqual((tingkat.loc['12', 'poin_plus'], tingkat.loc['12', 'poin_minus']), (0, -180))
+        self.assertEqual((tingkat.loc['11', 'poin_plus'], tingkat.loc['11', 'poin_minus']), (1950, 0))
+        self.assertEqual((tingkat.loc['10', 'poin_plus'], tingkat.loc['10', 'poin_minus']), (150, -35))
         self.assertEqual(tingkat.loc['12', 'jumlah_siswa'], 1)
         kelas = analytics.peringkat_kelas(self.jurnal)
         self.assertEqual(kelas['kelas'].tolist()[0], '12-T1')
         self.assertEqual(kelas.set_index('kelas').loc['11-T1', 'tingkat'], '11')
         self.assertEqual(tingkat.loc['12', 'jumlah_kelas'], 1)
+
+    def test_peringkat_kelas_memakai_jumlah_rombel(self):
+        jurnal = pd.DataFrame([{'nis': '1', 'kelas': '10-5', 'poin': -12}])
+        siswa = pd.DataFrame([
+            {'nis': '1', 'kelas': '10-5'},
+            {'nis': '2', 'kelas': '10-5'},
+            {'nis': '3', 'kelas': '10-5'},
+        ])
+        hasil = analytics.peringkat_kelas(jurnal, siswa).iloc[0]
+        self.assertEqual(hasil['jumlah_siswa'], 1)
+        self.assertEqual(hasil['jumlah_rombel'], 3)
+        self.assertEqual(hasil['rata_rata_pelanggaran'], -4)
+
+    def test_peringkat_kelas_rombel_nol_tidak_inf(self):
+        jurnal = pd.DataFrame([{'nis': '1', 'kelas': '10-5', 'poin': -12}])
+        siswa = pd.DataFrame([{'nis': None, 'kelas': '10-5'}])
+        hasil = analytics.peringkat_kelas(jurnal, siswa).iloc[0]
+        self.assertEqual(hasil['jumlah_rombel'], 0)
+        self.assertTrue(pd.isna(hasil['rata_rata_pelanggaran']))
+        self.assertTrue(pd.isna(hasil['rata_rata_prestasi']))
+
+    def test_kumulatif_poin_membagi_pelanggaran_dan_prestasi(self):
+        jurnal = pd.DataFrame([
+            {'nis': '1', 'tanggal_kejadian': '2026-07-20', 'poin': -50},
+            {'nis': '1', 'tanggal_kejadian': '2026-07-20', 'poin': 200},
+            {'nis': '1', 'tanggal_kejadian': '2026-07-21', 'poin': -30},
+        ])
+        hasil = analytics.kumulatif_poin_siswa(jurnal, '1')
+        self.assertEqual(hasil['kumulatif_pelanggaran'].tolist(), [-50, -80])
+        self.assertEqual(hasil['kumulatif_prestasi'].tolist(), [200, 200])
 
     def test_statistik_petugas_dan_distribusi_kategori(self):
         petugas = analytics.statistik_petugas(self.jurnal).set_index('petugas')
@@ -215,7 +249,7 @@ class DataKosongTestCase(TempDbTestCase):
         fungsi = [
             (analytics.daftar_pilihan_siswa, (self.jurnal, self.siswa)),
             (analytics.riwayat_siswa, (self.jurnal, '12403')),
-            (analytics.kumulatif_netto_siswa, (self.jurnal, '12403')),
+            (analytics.kumulatif_poin_siswa, (self.jurnal, '12403')),
             (analytics.entri_per_subkategori_siswa, (self.jurnal, '12403')),
             (analytics.pelanggaran_berulang, (self.jurnal,)),
             (analytics.eskalasi_tahapan, (self.jurnal,)),
@@ -236,7 +270,8 @@ class DataKosongTestCase(TempDbTestCase):
 
     def test_profil_pada_basis_data_kosong(self):
         profil = analytics.profil_siswa(self.jurnal, '12403', siswa=self.siswa)
-        self.assertEqual(profil['netto'], 0)
+        self.assertEqual(profil['poin_prestasi'], 0)
+        self.assertEqual(profil['poin_pelanggaran'], 0)
         self.assertEqual(profil['jumlah_entri'], 0)
         self.assertEqual(profil['poin_orang_tua'], 0)
         self.assertEqual(profil['sumber_identitas'], 'tidak_ditemukan')

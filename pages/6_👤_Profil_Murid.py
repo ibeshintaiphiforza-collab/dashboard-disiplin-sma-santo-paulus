@@ -1,12 +1,14 @@
 import sys
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 sys.path.append(str(Path(__file__).parent.parent))
 
-from core.analytics import (daftar_pilihan_siswa, entri_per_subkategori_siswa, kumulatif_netto_siswa,
+from core.analytics import (daftar_pilihan_siswa, entri_per_subkategori_siswa, kumulatif_poin_siswa,
                             profil_siswa, riwayat_siswa)
+from core import analytics_charts as charts
 from core.export import to_csv_bytes, to_excel_bytes
 from core.pdf import periode_label, rapor_siswa_pdf
 from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
@@ -16,7 +18,7 @@ st.set_page_config(page_title='Profil Murid', layout='wide')
 inject_css()
 sidebar_brand()
 header_halaman('Profil Murid',
-               'Rapor poin per murid: prestasi, pelanggaran, netto, dan riwayat entri.')
+               'Rapor poin per murid: prestasi, pelanggaran, dan riwayat entri.')
 ensure_init()
 
 jurnal = cached_jurnal()
@@ -38,22 +40,27 @@ profil = profil_siswa(jurnal_aktif, nis, siswa)
 st.subheader(f"{profil['nama']} ({profil['kelas']})")
 st.write(f"NIS {profil['nis']} | Absen {profil['absen'] or '-'} | sumber identitas: {profil['sumber_identitas']}")
 
-kolom1, kolom2, kolom3, kolom4 = st.columns(4)
+kolom1, kolom2, kolom3 = st.columns(3)
 kolom1.metric('Total poin prestasi', f"{profil['poin_prestasi']:,}")
 kolom2.metric('Total poin pelanggaran', f"{profil['poin_pelanggaran']:,}")
-kolom3.metric('Netto', f"{profil['netto']:,}")
-kolom4.metric('Jumlah entri', f"{profil['jumlah_entri']:,}")
+kolom3.metric('Jumlah entri', f"{profil['jumlah_entri']:,}")
 
 st.divider()
 st.subheader('Grafik')
-kumulatif = kumulatif_netto_siswa(jurnal_aktif, nis)
+kumulatif = kumulatif_poin_siswa(jurnal_aktif, nis)
 per_subkategori = entri_per_subkategori_siswa(jurnal_aktif, nis)
-tab_kumulatif, tab_subkategori = st.tabs(['Netto Kumulatif', 'Entri per Subkategori'])
+riwayat = riwayat_siswa(jurnal_aktif, nis)
+tanggal = pd.to_datetime(riwayat['tanggal_kejadian'], errors='coerce')
+jumlah_tanpa_tanggal = int(tanggal.isna().sum())
+if jumlah_tanpa_tanggal:
+    st.caption(f'{jumlah_tanpa_tanggal} entri tanpa tanggal valid tetap ada di riwayat, '
+               'tetapi tidak masuk grafik kumulatif.')
+tab_kumulatif, tab_subkategori = st.tabs(['Poin Kumulatif', 'Entri per Subkategori'])
 with tab_kumulatif:
     if kumulatif.empty:
         st.info('Belum ada entri untuk digambarkan.')
     else:
-        st.line_chart(kumulatif.set_index('tanggal_kejadian')['netto_kumulatif'])
+        st.plotly_chart(charts.fig_kumulatif_siswa(kumulatif), width='stretch')
 with tab_subkategori:
     if per_subkategori.empty:
         st.info('Belum ada entri untuk digambarkan.')
@@ -62,7 +69,6 @@ with tab_subkategori:
 
 st.divider()
 st.subheader('Riwayat Entri')
-riwayat = riwayat_siswa(jurnal_aktif, nis)
 if riwayat.empty:
     st.info('Murid ini belum memiliki entri jurnal.')
 else:

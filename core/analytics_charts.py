@@ -241,11 +241,11 @@ def fig_tingkat(df):
     return fig
 
 
-def fig_kelas(df):
+def fig_kelas(df, siswa=None):
     """Bar bertumpuk horizontal poin plus dan minus per kelas."""
     if _kosong(df):
         return None
-    data = analytics.peringkat_kelas(df)
+    data = analytics.peringkat_kelas(df, siswa)
     if data.empty:
         return None
     data = data.copy()
@@ -302,14 +302,13 @@ def fig_petugas(df):
 
 
 def fig_tren(df):
-    """Garis bulanan pelanggaran dan prestasi plus kumulatif netto."""
+    """Garis bulanan pelanggaran dan prestasi plus kumulatif terpisah."""
     if _kosong(df):
         return None
     data = analytics.tren_bulanan(df)
     if data.empty:
         return None
     data = data.copy()
-    data['netto_kumulatif'] = data['netto'].cumsum()
     data['label'] = data['bulan'].map(analytics.label_bulan)
     fig = make_subplots(specs=[[{'secondary_y': True}]])
     fig.add_trace(go.Scatter(
@@ -321,14 +320,42 @@ def fig_tren(df):
         line=dict(color=WARNA_PLUS), hovertemplate='%{x}<br>%{y} prestasi<extra></extra>',
     ), secondary_y=False)
     fig.add_trace(go.Scatter(
-        x=data['label'], y=data['netto_kumulatif'], name='Netto kumulatif', mode='lines+markers',
-        line=dict(color=WARNA_SISWA, dash='dot'),
+        x=data['label'], y=data['kumulatif_pelanggaran'], name='Kumulatif pelanggaran', mode='lines+markers',
+        line=dict(color=WARNA_MINUS, dash='dot'),
+        hovertemplate='%{x}<br>%{y} poin<extra></extra>',
+    ), secondary_y=True)
+    fig.add_trace(go.Scatter(
+        x=data['label'], y=data['kumulatif_prestasi'], name='Kumulatif prestasi', mode='lines+markers',
+        line=dict(color=WARNA_PLUS, dash='dot'),
         hovertemplate='%{x}<br>%{y} poin<extra></extra>',
     ), secondary_y=True)
     fig.update_layout(**TATA_LETAK)
     _siapkan(fig, 'x', data['label'].tolist(), 'Bulan', '')
     fig.update_yaxes(title_text='Jumlah entri', secondary_y=False)
-    fig.update_yaxes(title_text='Netto kumulatif', secondary_y=True)
+    fig.update_yaxes(title_text='Kumulatif poin', secondary_y=True)
+    return fig
+
+
+def fig_kumulatif_siswa(data):
+    """Garis kumulatif pelanggaran dan prestasi siswa pada sumbu terpisah."""
+    kolom = {'tanggal_kejadian', 'kumulatif_pelanggaran', 'kumulatif_prestasi'}
+    if _kosong(data) or not kolom.issubset(data.columns):
+        return None
+    fig = make_subplots(specs=[[{'secondary_y': True}]])
+    fig.add_trace(go.Scatter(
+        x=data['tanggal_kejadian'], y=data['kumulatif_pelanggaran'],
+        name='Kumulatif pelanggaran', mode='lines+markers',
+        line=dict(color=WARNA_MINUS),
+    ), secondary_y=False)
+    fig.add_trace(go.Scatter(
+        x=data['tanggal_kejadian'], y=data['kumulatif_prestasi'],
+        name='Kumulatif prestasi', mode='lines+markers',
+        line=dict(color=WARNA_PLUS),
+    ), secondary_y=True)
+    fig.update_layout(**TATA_LETAK)
+    _siapkan(fig, 'x', data['tanggal_kejadian'].tolist(), 'Tanggal', '')
+    fig.update_yaxes(title_text='Poin pelanggaran', secondary_y=False)
+    fig.update_yaxes(title_text='Poin prestasi', secondary_y=True)
     return fig
 
 

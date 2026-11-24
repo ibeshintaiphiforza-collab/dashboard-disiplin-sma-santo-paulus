@@ -387,8 +387,9 @@ class ImportTestCase(unittest.TestCase):
         ], 'x.csv', confirmed=True)
         rekap = analytics.rekap_per_kelas(analytics.load_jurnal())
         self.assertEqual(rekap['kelas'].tolist(), ['12-K2'])
-        self.assertEqual((rekap.iloc[0]['jumlah_siswa'], rekap.iloc[0]['jumlah_entri'], rekap.iloc[0]['netto']),
-                         (3, 3, -150))
+        self.assertEqual((rekap.iloc[0]['jumlah_siswa'], rekap.iloc[0]['jumlah_entri'],
+                          rekap.iloc[0]['poin_plus'], rekap.iloc[0]['poin_minus']),
+                         (3, 3, 0, -150))
         peringkat = analytics.peringkat_kelas(analytics.load_jurnal())
         self.assertEqual((peringkat.iloc[0]['kelas'], peringkat.iloc[0]['tingkat']), ('12-K2', '12'))
 

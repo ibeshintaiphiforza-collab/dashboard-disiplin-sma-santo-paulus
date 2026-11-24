@@ -14,6 +14,7 @@ from core.analytics import (analisis_per_pasal, analisis_per_tingkat, distribusi
                             pelanggaran_berulang, ringkasan_mingguan, siswa_berisiko, siswa_penyumbang,
                             statistik_petugas, top_pelanggar_per_pasal, tren_bulanan)
 from core.db import load_referensi_pasal
+from core.pdf import buat_pdf_kandidat_penghargaan
 from core.penghargaan import daftar_kandidat
 from core.export import to_csv_bytes, to_excel_bytes
 from core.session import cached_jurnal, cached_siswa, ensure_init, sidebar_filters
@@ -62,7 +63,7 @@ eskalasi = eskalasi_tahapan(jurnal)
 pasal = analisis_per_pasal(jurnal)
 top_pasal = top_pelanggar_per_pasal(jurnal)
 tingkat = analisis_per_tingkat(jurnal)
-kelas = peringkat_kelas(jurnal)
+kelas = peringkat_kelas(jurnal, siswa)
 petugas = statistik_petugas(jurnal)
 distribusi_petugas = distribusi_kategori_petugas(jurnal)
 bulanan = tren_bulanan(jurnal)
@@ -118,7 +119,7 @@ with st.expander('4. Analisis per Kelas dan Tingkat', expanded=False):
     tampilkan_gambar(charts.fig_tingkat(jurnal), 'Belum ada data tingkat untuk digambarkan.')
     st.subheader('Peringkat per Kelas')
     tabel_dengan_ekspor(kelas, 'peringkat_kelas', 'Belum ada data kelas.')
-    tampilkan_gambar(charts.fig_kelas(jurnal), 'Belum ada data kelas untuk digambarkan.')
+    tampilkan_gambar(charts.fig_kelas(jurnal, siswa), 'Belum ada data kelas untuk digambarkan.')
 
 with st.expander('5. Statistik Petugas', expanded=False):
     tabel_dengan_ekspor(petugas, 'statistik_petugas', 'Belum ada data petugas.')
@@ -317,8 +318,25 @@ with st.expander('10. Kandidat Penghargaan', expanded=False):
             return [''] * len(baris)
 
         st.dataframe(tampil.style.apply(_tandai, axis=1), width='stretch', hide_index=True)
-        st.download_button('CSV kandidat_penghargaan', to_csv_bytes(tampil), 'kandidat_penghargaan.csv',
-                           'text/csv', key='csv_kandidat_penghargaan')
+
+        tanggal_cetak = pd.Timestamp.now().strftime('%d-%m-%Y')
+        parameter_pdf = {
+            'periode': periode,
+            'batas_pelanggaran': int(batas_pelanggaran),
+            'dukungan_orang_tua': dukungan,
+            'jumlah_kandidat': len(tampil),
+            'tanggal_cetak': tanggal_cetak,
+        }
+        kolom_csv, kolom_pdf = st.columns(2)
+        with kolom_csv:
+            st.download_button('CSV kandidat_penghargaan', to_csv_bytes(tampil),
+                               'kandidat_penghargaan.csv', 'text/csv',
+                               key='csv_kandidat_penghargaan')
+        with kolom_pdf:
+            st.download_button('PDF kandidat_penghargaan',
+                               buat_pdf_kandidat_penghargaan(tampil, parameter_pdf),
+                               f'kandidat_penghargaan_{tanggal_cetak}.pdf',
+                               'application/pdf', key='pdf_kandidat_penghargaan')
 
     st.caption('Daftar kandidat, bukan keputusan. Tafsir syarat pelanggaran dan periode perlu '
                'dikonfirmasi dari Buku Prestasi dan Disiplin.')

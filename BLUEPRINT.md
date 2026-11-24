@@ -307,7 +307,7 @@ id,timestamp_input,tanggal_kejadian,nis,nama_siswa,kelas,kode_pasal,poin,judul,k
 
 Cari siswa by NIS/nama → tampilkan:
 - Identitas + kelas
-- Saldo poin berjalan (plus, minus, netto)
+- Saldo poin berjalan (plus, minus)
 - Timeline semua entri (kronologis)
 - Grafik poin kumulatif per bulan
 - Tombol ekspor "Rapor Poin" individu (untuk orang tua/BK)

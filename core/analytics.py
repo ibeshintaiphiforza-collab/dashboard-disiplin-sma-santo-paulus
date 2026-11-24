@@ -49,10 +49,17 @@ def load_jurnal(conn=None):
     return normalisasi_kelas(df)
 
 
+def _poin_numerik(data):
+    return pd.to_numeric(data['poin'], errors='coerce')
+
+
 def normalisasi_kelas(df):
     if df is None or 'kelas' not in df.columns:
         return df
+    if 'poin' not in df.columns:
+        return df.iloc[0:0].copy()
     data = df.copy()
+    data['poin'] = _poin_numerik(data)
     if 'absen' not in data.columns:
         data['absen'] = None
     data['absen'] = data['absen'].astype(object)
@@ -154,7 +161,7 @@ def deteksi_anomali(df, siswa=None):
 
 
 def rekap_per_siswa(df, siswa=None):
-    kolom = ['nis', 'nama', 'kelas', 'absen', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri']
+    kolom = ['nis', 'nama', 'kelas', 'absen', 'poin_plus', 'poin_minus', 'jumlah_entri']
     data = normalisasi_kelas(df)
     if data.empty:
         return pd.DataFrame(columns=kolom)
@@ -167,7 +174,6 @@ def rekap_per_siswa(df, siswa=None):
         absen=('absen', 'first'),
         poin_plus=('poin_plus', 'sum'),
         poin_minus=('poin_minus', 'sum'),
-        netto=('poin', 'sum'),
         jumlah_entri=('poin', 'size'),
     ).reset_index()
     if siswa is not None and not siswa.empty:
@@ -176,11 +182,11 @@ def rekap_per_siswa(df, siswa=None):
         rekap['kelas'] = rekap['nis'].map(master['kelas']).fillna(rekap['kelas'])
         if 'absen' in master.columns:
             rekap['absen'] = rekap['nis'].map(master['absen']).fillna(rekap['absen'])
-    return rekap.sort_values('netto').reset_index(drop=True)[kolom]
+    return rekap.sort_values(['poin_minus', 'nis'], kind='stable').reset_index(drop=True)[kolom]
 
 
 def rekap_per_kelas(df):
-    kolom = ['kelas', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri', 'jumlah_siswa']
+    kolom = ['kelas', 'poin_plus', 'poin_minus', 'jumlah_entri', 'jumlah_siswa']
     data = normalisasi_kelas(df)
     if data.empty:
         return pd.DataFrame(columns=kolom)
@@ -190,18 +196,18 @@ def rekap_per_kelas(df):
     rekap = data.groupby('kelas').agg(
         poin_plus=('poin_plus', 'sum'),
         poin_minus=('poin_minus', 'sum'),
-        netto=('poin', 'sum'),
         jumlah_entri=('poin', 'size'),
         jumlah_siswa=('nis', 'nunique'),
     ).reset_index()
-    return rekap.sort_values('netto').reset_index(drop=True)[kolom]
+    return rekap.sort_values(['poin_minus', 'kelas'], kind='stable').reset_index(drop=True)[kolom]
 
 
 def rekap_per_subkategori(df):
-    kolom = ['subkategori', 'kategori', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri', 'jumlah_siswa']
-    if df.empty or 'subkategori' not in df.columns:
+    kolom = ['subkategori', 'kategori', 'poin_plus', 'poin_minus', 'jumlah_entri', 'jumlah_siswa']
+    if df is None or df.empty or 'subkategori' not in df.columns or 'poin' not in df.columns:
         return pd.DataFrame(columns=kolom)
     data = df.copy()
+    data['poin'] = _poin_numerik(data)
     data['subkategori'] = data['subkategori'].fillna('tanpa_pasal')
     data['kategori'] = data['kategori'].fillna('tanpa_pasal')
     data['poin_plus'] = data['poin'].clip(lower=0)
@@ -210,7 +216,6 @@ def rekap_per_subkategori(df):
         kategori=('kategori', 'first'),
         poin_plus=('poin_plus', 'sum'),
         poin_minus=('poin_minus', 'sum'),
-        netto=('poin', 'sum'),
         jumlah_entri=('poin', 'size'),
         jumlah_siswa=('nis', 'nunique'),
     ).reset_index()
@@ -281,7 +286,6 @@ def profil_siswa(df, nis, siswa=None):
         'sumber_identitas': sumber_identitas if not entri.empty or nama else 'tidak_ditemukan',
         'poin_prestasi': int(inti['poin'].clip(lower=0).sum()) if not inti.empty else 0,
         'poin_pelanggaran': int(inti['poin'].clip(upper=0).sum()) if not inti.empty else 0,
-        'netto': int(inti['poin'].sum()) if not inti.empty else 0,
         'jumlah_entri': int(len(inti)),
         'poin_orang_tua': int(orang_tua['poin'].sum()) if not orang_tua.empty else 0,
         'jumlah_entri_orang_tua': int(len(orang_tua)),
@@ -298,15 +302,20 @@ def riwayat_siswa(df, nis):
     return hasil.sort_values('tanggal_kejadian', ascending=False).reset_index(drop=True)
 
 
-def kumulatif_netto_siswa(df, nis):
-    kolom = ['tanggal_kejadian', 'poin', 'netto_kumulatif']
+def kumulatif_poin_siswa(df, nis):
+    kolom = ['tanggal_kejadian', 'kumulatif_pelanggaran', 'kumulatif_prestasi']
     entri = _entri_siswa(df, nis)
-    if entri.empty:
+    if entri.empty or 'poin' not in entri.columns:
         return pd.DataFrame(columns=kolom)
     data = entri.copy()
+    data['poin'] = _poin_numerik(data)
     data['tanggal_kejadian'] = pd.to_datetime(data['tanggal_kejadian'], errors='coerce')
-    harian = data.groupby('tanggal_kejadian', as_index=False)['poin'].sum().sort_values('tanggal_kejadian')
-    harian['netto_kumulatif'] = harian['poin'].cumsum()
+    harian = data.groupby('tanggal_kejadian', as_index=False).agg(
+        pelanggaran=('poin', lambda seri: seri[seri < 0].sum()),
+        prestasi=('poin', lambda seri: seri[seri > 0].sum()),
+    ).sort_values('tanggal_kejadian')
+    harian['kumulatif_pelanggaran'] = harian['pelanggaran'].cumsum()
+    harian['kumulatif_prestasi'] = harian['prestasi'].cumsum()
     return harian.reset_index(drop=True)[kolom]
 
 
@@ -383,7 +392,7 @@ def eskalasi_tahapan(df, tahapan=None):
 
 
 def siswa_berisiko(df, ambang=None, siswa=None):
-    kolom = ['nis', 'nama', 'kelas', 'absen', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri', 'melewati_ambang']
+    kolom = ['nis', 'nama', 'kelas', 'absen', 'poin_plus', 'poin_minus', 'jumlah_entri', 'melewati_ambang']
     rekap = rekap_per_siswa(df, siswa)
     if rekap.empty:
         return pd.DataFrame(columns=kolom)
@@ -392,7 +401,7 @@ def siswa_berisiko(df, ambang=None, siswa=None):
         hasil['melewati_ambang'] = False
     else:
         hasil['melewati_ambang'] = hasil['poin_minus'] <= -abs(int(ambang))
-    return hasil.sort_values(['poin_minus', 'netto']).reset_index(drop=True)[kolom]
+    return hasil.sort_values('poin_minus').reset_index(drop=True)[kolom]
 
 
 def analisis_per_pasal(df):
@@ -443,7 +452,7 @@ def tingkat_dari_kelas(kelas):
 
 
 def analisis_per_tingkat(df):
-    kolom = ['tingkat', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri', 'jumlah_siswa', 'jumlah_kelas']
+    kolom = ['tingkat', 'poin_plus', 'poin_minus', 'jumlah_entri', 'jumlah_siswa', 'jumlah_kelas']
     data = normalisasi_kelas(df) if df is not None else None
     if data is None or data.empty or 'kelas' not in data.columns:
         return pd.DataFrame(columns=kolom)
@@ -454,7 +463,6 @@ def analisis_per_tingkat(df):
     hasil = data.groupby('tingkat').agg(
         poin_plus=('poin_plus', 'sum'),
         poin_minus=('poin_minus', 'sum'),
-        netto=('poin', 'sum'),
         jumlah_entri=('poin', 'size'),
         jumlah_siswa=('nis', 'nunique'),
         jumlah_kelas=('kelas', 'nunique'),
@@ -462,16 +470,23 @@ def analisis_per_tingkat(df):
     return hasil.sort_values('tingkat').reset_index(drop=True)[kolom]
 
 
-def peringkat_kelas(df):
-    kolom = ['kelas', 'tingkat', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri',
-             'jumlah_siswa', 'rata_rata_netto']
+def peringkat_kelas(df, siswa=None):
+    kolom = ['kelas', 'tingkat', 'poin_plus', 'poin_minus', 'jumlah_entri',
+             'jumlah_siswa', 'jumlah_rombel', 'rata_rata_pelanggaran', 'rata_rata_prestasi']
     rekap = rekap_per_kelas(df)
     if rekap.empty:
         return pd.DataFrame(columns=kolom)
     hasil = rekap.copy()
     hasil['tingkat'] = tingkat_dari_kelas(hasil['kelas']).values
-    hasil['rata_rata_netto'] = (hasil['netto'] / hasil['jumlah_siswa']).round(2)
-    return hasil.sort_values('netto').reset_index(drop=True)[kolom]
+    if siswa is not None and not siswa.empty and {'kelas', 'nis'}.issubset(siswa.columns):
+        jumlah_rombel = siswa.groupby('kelas')['nis'].nunique()
+        hasil['jumlah_rombel'] = hasil['kelas'].map(jumlah_rombel).fillna(hasil['jumlah_siswa'])
+    else:
+        hasil['jumlah_rombel'] = hasil['jumlah_siswa']
+    denominator = hasil['jumlah_rombel'].where(hasil['jumlah_rombel'] > 0)
+    hasil['rata_rata_pelanggaran'] = (hasil['poin_minus'] / denominator).round(2)
+    hasil['rata_rata_prestasi'] = (hasil['poin_plus'] / denominator).round(2)
+    return hasil.sort_values(['rata_rata_pelanggaran', 'kelas'], kind='stable').reset_index(drop=True)[kolom]
 
 
 def statistik_petugas(df):
@@ -510,10 +525,11 @@ def distribusi_kategori_petugas(df):
 
 
 def tren_bulanan(df):
-    kolom = ['bulan', 'pelanggaran', 'prestasi', 'netto']
-    if df is None or df.empty or 'tanggal_kejadian' not in df.columns:
+    kolom = ['bulan', 'pelanggaran', 'prestasi', 'kumulatif_pelanggaran', 'kumulatif_prestasi']
+    if df is None or df.empty or 'tanggal_kejadian' not in df.columns or 'poin' not in df.columns:
         return pd.DataFrame(columns=kolom)
     data = df.copy()
+    data['poin'] = _poin_numerik(data)
     data['tanggal'] = pd.to_datetime(data['tanggal_kejadian'], errors='coerce')
     data = data[data['tanggal'].notna()]
     if data.empty:
@@ -521,11 +537,16 @@ def tren_bulanan(df):
     data['bulan'] = data['tanggal'].dt.strftime('%Y-%m')
     data['pelanggaran'] = (data['poin'] < 0).astype(int)
     data['prestasi'] = (data['poin'] > 0).astype(int)
+    data['poin_pelanggaran'] = data['poin'].clip(upper=0)
+    data['poin_prestasi'] = data['poin'].clip(lower=0)
     hasil = data.groupby('bulan').agg(
         pelanggaran=('pelanggaran', 'sum'),
         prestasi=('prestasi', 'sum'),
-        netto=('poin', 'sum'),
+        kumulatif_pelanggaran=('poin_pelanggaran', 'sum'),
+        kumulatif_prestasi=('poin_prestasi', 'sum'),
     ).reset_index()
+    hasil['kumulatif_pelanggaran'] = hasil['kumulatif_pelanggaran'].cumsum()
+    hasil['kumulatif_prestasi'] = hasil['kumulatif_prestasi'].cumsum()
     return hasil.sort_values('bulan').reset_index(drop=True)[kolom]
 
 

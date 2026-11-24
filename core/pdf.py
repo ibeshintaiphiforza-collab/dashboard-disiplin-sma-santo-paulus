@@ -35,7 +35,6 @@ LABEL_RINGKASAN = {
     'poin_pelanggaran': 'Total poin pelanggaran',
     'poin_plus': 'Total poin plus',
     'poin_minus': 'Total poin minus',
-    'netto': 'Netto',
     'siswa_berisiko': 'Jumlah murid berisiko',
     'jumlah_siswa_berisiko': 'Jumlah murid berisiko',
 }
@@ -67,6 +66,8 @@ def _angka(nilai):
         pass
     try:
         return f'{int(round(float(nilai)))}'
+    except OverflowError:
+        return '-'
     except (TypeError, ValueError):
         return _teks(nilai)
 
@@ -234,7 +235,6 @@ def _baris_kelas(rekap):
             _teks(data.get('kelas')),
             _angka(data.get('poin_plus')),
             _angka(data.get('poin_minus')),
-            _angka(data.get('netto')),
             _angka(data.get('jumlah_entri')),
             _angka(data.get('jumlah_siswa')),
         ])
@@ -242,13 +242,13 @@ def _baris_kelas(rekap):
 
 
 def _tabel_kelas(rekap, gaya):
-    return _tabel(['Kelas', 'Poin plus', 'Poin minus', 'Netto', 'Jumlah entri', 'Jumlah murid'],
-                  _baris_kelas(rekap), [50 * mm, 45 * mm, 45 * mm, 42 * mm, 40 * mm, 45 * mm],
-                  gaya, {1: 'RIGHT', 2: 'RIGHT', 3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT'})
+    return _tabel(['Kelas', 'Poin plus', 'Poin minus', 'Jumlah entri', 'Jumlah murid'],
+                  _baris_kelas(rekap), [55 * mm, 45 * mm, 45 * mm, 40 * mm, 45 * mm],
+                  gaya, {1: 'RIGHT', 2: 'RIGHT', 3: 'RIGHT', 4: 'RIGHT'})
 
 
 def _ringkasan_subkategori(data):
-    kolom = ['subkategori', 'kategori', 'poin_plus', 'poin_minus', 'netto', 'jumlah_entri']
+    kolom = ['subkategori', 'kategori', 'poin_plus', 'poin_minus', 'jumlah_entri']
     if data.empty or 'subkategori' not in data.columns or 'poin' not in data.columns:
         return pd.DataFrame(columns=kolom)
     salinan = data.copy()
@@ -261,7 +261,6 @@ def _ringkasan_subkategori(data):
     hasil = salinan.groupby(['subkategori', 'kategori']).agg(
         poin_plus=('poin_plus', 'sum'),
         poin_minus=('poin_minus', 'sum'),
-        netto=('poin', 'sum'),
         jumlah_entri=('poin', 'size'),
     ).reset_index()
     return hasil.sort_values('jumlah_entri', ascending=False).reset_index(drop=True)[kolom]
@@ -293,7 +292,6 @@ def rapor_siswa_pdf(profil, riwayat, periode_label, batas_riwayat=None):
     ringkasan = [
         ['Poin prestasi', _angka(profil.get('poin_prestasi'))],
         ['Poin pelanggaran', _angka(profil.get('poin_pelanggaran'))],
-        ['Netto', _angka(profil.get('netto'))],
         ['Jumlah entri', _angka(profil.get('jumlah_entri'))],
     ]
     alur.append(_tabel(['Keterangan', 'Nilai'], ringkasan, [40 * mm, 140 * mm], gaya,
@@ -319,12 +317,11 @@ def rapor_siswa_pdf(profil, riwayat, periode_label, batas_riwayat=None):
             _label(baris.get('kategori')),
             _angka(baris.get('poin_plus')),
             _angka(baris.get('poin_minus')),
-            _angka(baris.get('netto')),
             _angka(baris.get('jumlah_entri')),
         ])
-    alur.append(_tabel(['Subkategori', 'Kategori', 'Poin plus', 'Poin minus', 'Netto', 'Entri'],
-                       baris_sub, [55 * mm, 35 * mm, 22 * mm, 22 * mm, 20 * mm, 26 * mm],
-                       gaya, {2: 'RIGHT', 3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT'}))
+    alur.append(_tabel(['Subkategori', 'Kategori', 'Poin plus', 'Poin minus', 'Entri'],
+                       baris_sub, [55 * mm, 35 * mm, 25 * mm, 25 * mm, 26 * mm],
+                       gaya, {2: 'RIGHT', 3: 'RIGHT', 4: 'RIGHT'}))
 
     alur.append(Paragraph('Riwayat Entri Kronologis', gaya['seksi']))
     urut = data
@@ -392,19 +389,126 @@ def rekap_kelas_pdf(rekap_kelas_df, detail_df, kelas, periode_label):
             _teks(siswa.get('absen')),
             _angka(siswa.get('poin_plus')),
             _angka(siswa.get('poin_minus')),
-            _angka(siswa.get('netto')),
             _angka(siswa.get('jumlah_entri')),
             status_peringatan(poin_minus)['label'],
         ])
-    alur.append(_tabel(['NIS', 'Nama', 'Absen', 'Poin plus', 'Poin minus', 'Netto', 'Entri',
+    alur.append(_tabel(['NIS', 'Nama', 'Absen', 'Poin plus', 'Poin minus', 'Entri',
                         'Status SP'], baris,
-                       [22 * mm, 72 * mm, 16 * mm, 24 * mm, 24 * mm, 22 * mm, 22 * mm, 65 * mm],
-                       gaya, {3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT', 6: 'RIGHT'}))
+                       [22 * mm, 72 * mm, 16 * mm, 24 * mm, 24 * mm, 22 * mm, 65 * mm],
+                       gaya, {3: 'RIGHT', 4: 'RIGHT', 5: 'RIGHT'}))
     alur.append(Spacer(1, 6))
     alur.append(Paragraph('Status SP dihitung dari akumulasi poin pelanggaran setiap murid.',
                           gaya['catatan']))
 
     return _bangun(alur, landscape(A4), judul)
+
+
+def _catatan_halaman_footer(teks_catatan):
+    def footer(canvas, doc):
+        _footer(canvas, doc)
+        canvas.saveState()
+        canvas.setFont('Helvetica', 8)
+        canvas.setFillColor(WARNA_META)
+        canvas.drawCentredString(doc.pagesize[0] / 2, 9 * mm, teks_catatan)
+        canvas.restoreState()
+    return footer
+
+
+def buat_pdf_kandidat_penghargaan(tabel, parameter):
+    gaya = _gaya()
+    data = _frame_aman(tabel)
+    parameter = dict(parameter or {})
+    judul = 'Kandidat Penghargaan'
+    alur = _kepala_dokumen(judul, parameter.get('periode'), gaya)
+
+    tanggal_cetak = _teks_opsional(parameter.get('tanggal_cetak')) or datetime.now().strftime('%d-%m-%Y %H:%M')
+    baris_parameter = [
+        ['Periode', _teks(parameter.get('periode'))],
+        ['Batas pelanggaran', _teks(parameter.get('batas_pelanggaran'))],
+        ['Dukungan orang tua', _teks(parameter.get('dukungan_orang_tua'))],
+        ['Jumlah kandidat', _angka(parameter.get('jumlah_kandidat'))],
+        ['Tanggal cetak', tanggal_cetak],
+    ]
+    alur.append(_tabel(['Parameter', 'Nilai'], baris_parameter, [45 * mm, 120 * mm], gaya))
+
+    alur.append(Paragraph('Daftar Kandidat', gaya['seksi']))
+    kolom = ['NIS', 'Nama', 'Kelas', 'Kelompok', 'Total Prestasi', 'Tingkat',
+             'Penghargaan', 'Total Pelanggaran', 'Memenuhi Syarat']
+    kolom_data = {
+        'NIS': 'nis', 'Nama': 'nama', 'Kelas': 'kelas', 'Kelompok': 'kelompok',
+        'Total Prestasi': 'total_prestasi', 'Tingkat': 'tingkat', 'Penghargaan': 'penghargaan',
+        'Total Pelanggaran': 'total_pelanggaran', 'Memenuhi Syarat': 'memenuhi_syarat',
+    }
+
+    def _sumber(data, tampil):
+        mentah = kolom_data.get(tampil)
+        if mentah in data.columns:
+            return mentah
+        if tampil in data.columns:
+            return tampil
+        return None
+
+    kepala = kolom
+
+    baris_tabel = []
+    for _, isi in data.iterrows():
+        sel = []
+        for k in kolom:
+            kunci = _sumber(data, k)
+            nilai = isi.get(kunci) if kunci is not None else None
+            if k in ('Total Prestasi', 'Total Pelanggaran'):
+                sel.append(_angka(nilai))
+            elif k == 'Memenuhi Syarat' and pd.api.types.is_bool_dtype(type(nilai)):
+                sel.append('Ya' if nilai else 'Tidak')
+            else:
+                sel.append(_teks(nilai))
+        baris_tabel.append(sel)
+
+    lebar = [18 * mm, 46 * mm, 18 * mm, 34 * mm, 22 * mm, 14 * mm, 52 * mm, 24 * mm, 22 * mm]
+
+    def bungkus(baris):
+        return [Paragraph(escape(str(v)), gaya['sel']) for v in baris]
+
+    if not baris_tabel:
+        alur.append(Paragraph(escape(f'{KOSONG}.'), gaya['catatan']))
+    else:
+        sel_data = [bungkus(baris) for baris in baris_tabel]
+        tabel = Table(
+            [[Paragraph(escape(str(k)), gaya['kepala']) for k in kepala]] + sel_data,
+            colWidths=lebar, repeatRows=1)
+        perintah = [
+            ('BACKGROUND', (0, 0), (-1, 0), WARNA_KEPALA),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.4, WARNA_GARIS),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 4),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, WARNA_LAJUR]),
+            ('ALIGN', (4, 1), (4, -1), 'RIGHT'),
+            ('ALIGN', (5, 1), (5, -1), 'CENTER'),
+            ('ALIGN', (7, 1), (7, -1), 'RIGHT'),
+            ('ALIGN', (8, 1), (8, -1), 'CENTER'),
+        ]
+        tabel.setStyle(TableStyle(perintah))
+        alur.append(tabel)
+
+    alur.append(Spacer(1, 6))
+    alur.append(Paragraph('Daftar kandidat, bukan keputusan.', gaya['catatan']))
+
+    return _bangun_footer(alur, landscape(A4), judul,
+                          _catatan_halaman_footer('Daftar kandidat, bukan keputusan.'))
+
+
+def _bangun_footer(alur, pagesize, judul, footer):
+    buffer = io.BytesIO()
+    dokumen = SimpleDocTemplate(
+        buffer, pagesize=pagesize, pageCompression=0,
+        leftMargin=15 * mm, rightMargin=15 * mm, topMargin=14 * mm, bottomMargin=18 * mm,
+        title=judul, author=NAMA_SEKOLAH, subject='Laporan Disiplin dan Prestasi')
+    dokumen.build(alur, onFirstPage=footer, onLaterPages=footer)
+    return buffer.getvalue()
 
 
 def _baris_ringkasan(ringkasan):
