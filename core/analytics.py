@@ -664,7 +664,7 @@ def import_terakhir():
 
 def ringkasan_mingguan(jurnal, tanggal_awal_minggu):
     awal = pd.Timestamp(tanggal_awal_minggu).normalize()
-    awal = awal - pd.Timedelta(days=awal.dayofweek)
+    awal = awal - pd.Timedelta(days=awal.day_of_week)
     akhir = awal + pd.Timedelta(days=6)
     awal_lalu = awal - pd.Timedelta(days=7)
     akhir_lalu = awal - pd.Timedelta(days=1)

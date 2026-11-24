@@ -193,7 +193,7 @@ with st.expander('9. Ringkasan Mingguan', expanded=False):
         st.info('Belum ada tanggal kejadian yang valid.')
     else:
         senin_terakhir = tanggal_jurnal.max().normalize()
-        senin_terakhir = senin_terakhir - pd.Timedelta(days=senin_terakhir.dayofweek)
+        senin_terakhir = senin_terakhir - pd.Timedelta(days=senin_terakhir.day_of_week)
         awal_minggu = st.date_input('Senin awal minggu', value=senin_terakhir.date(), key='ringkasan_minggu')
         ringkasan = ringkasan_mingguan(jurnal, awal_minggu)
         ini = ringkasan['minggu_ini']

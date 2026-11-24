@@ -102,7 +102,7 @@ def heatmap_hari_jam(df):
     data = data[pd.to_datetime(data['tanggal_kejadian'], errors='coerce').notna()].copy()
     if data.empty:
         return pd.DataFrame(columns=kolom)
-    data['hari'] = pd.to_datetime(data['tanggal_kejadian'], errors='coerce').dt.dayofweek.map(
+    data['hari'] = pd.to_datetime(data['tanggal_kejadian'], errors='coerce').dt.day_of_week.map(
         lambda posisi: NAMA_HARI[posisi])
     jam = pd.Series(TANPA_JAM, index=data.index, dtype='object')
     if 'timestamp_input' in data.columns:

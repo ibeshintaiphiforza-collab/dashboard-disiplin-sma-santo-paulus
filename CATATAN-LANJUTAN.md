@@ -106,3 +106,10 @@ Belum dikerjakan (menunggu konfirmasi Tahap 4+): autentikasi ringan, akses jarin
 - Halaman Import CSV punya unduh baris error (CSV utf-8-sig) bila validasi gagal.
 - Rapor Poin individu PDF tersedia di Profil Siswa (identitas, total, per kategori, riwayat, tanda tangan).
 - Tes: 132 lulus, compile bersih.
+
+## Update 2026-11-24
+- Sidebar: `initial_sidebar_state="expanded"` di `Beranda.py` dan 6 halaman `pages/`, tombol buka sidebar tetap terlihat (menu, toolbar, dan deploy button disembunyikan selektif), padding atas konten dinaikkan agar tidak tertutup header.
+- `requirements.txt` ditambahkan (streamlit, pandas, plotly, openpyxl, reportlab, chardet, pytest) dengan versi terpasang.
+- Atribut pandas diseragamkan ke `day_of_week` (sebelumnya campur `dayofweek`/`day_of_week`) di `core/analytics.py`, `core/dashboard.py`, dan `pages/2_Analisis.py`.
+- Repo Git lokal didorong ke GitHub private: `ibeshintaiphiforza-collab/dashboard-disiplin-sma-santo-paulus`.
+- Tahap 3 (impor historis, autentikasi, akses 0.0.0.0, mode terang) tetap belum dikerjakan.
